@@ -4,8 +4,8 @@ public class Program
 {
     public static void Main()
     {
-        DotNetEnv.Env.Load();
-        // SKapa en connection string
+        DotNetEnv.Env.Load(); // Läser in lösenordet från .env-filen så att det inte behöver stå direkt i koden.
+        // Skapa en connection string
         string connectionString = 
             $"""
             Server=comet-direct.usbx.me;
