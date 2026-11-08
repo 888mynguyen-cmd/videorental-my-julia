@@ -37,6 +37,8 @@ public class Program
                 if (Choice == 1)
                 {
 
+                    ShowMovie(connection);
+
                 }
 
                 else if (Choice == 2)
@@ -75,6 +77,22 @@ public class Program
                 }
             }
         
+    }
+
+    public static void ShowMovie(MySqlConnection connection)
+    {
+
+        using MySqlCommand command = new MySqlCommand("SELECT Name, Description FROM VHS;", connection); // Här skapar vi command för SELECT
+
+        using MySqlDataReader reader = command.ExecuteReader();
+
+        while(reader.Read())
+        {
+            String name = reader.GetString("Name");
+            String description = reader.GetString("Description");
+
+            Console.WriteLine($"Namn: ('{name}', Beskrivning: '{description}')");
+        }
     }
 }
 
