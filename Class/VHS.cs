@@ -4,14 +4,16 @@ public class VHS
     public string Title {get; set;}
     public string Description {get; set;}
     public bool InCatalog {get; set;}
-    // public int PriceId {get; set;}
+    public int BuyPriceId {get; set;}
+    public int RentalPriceId {get;set;}
 
-    public VHS( int id, string title, string description, bool inCatalog)
+    public VHS( int id, string title, string description, bool inCatalog, int buyPriceId, int rentalPriceId)
     {
         Id = id;
         Title = title;
         Description = description;
         InCatalog = inCatalog;
-        // PriceId = priceId; // Behövde kommentera bort tills vi lagt till dom i databasen för kan inte göra referens till den än
+        BuyPriceId = buyPriceId;
+        RentalPriceId = rentalPriceId;
     }
 }
