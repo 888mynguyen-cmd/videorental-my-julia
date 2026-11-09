@@ -5,7 +5,7 @@ public class MovieRepository
 {    public static List<VHS> ShowMovie(MySqlConnection connection)
     {
         
-        using MySqlCommand command = new MySqlCommand("SELECT Id, Title, Description, Incatalog FROM VHS;", connection); // Här skapar vi command för SELECT
+        using MySqlCommand command = new MySqlCommand("SELECT Id, Title, Description, Incatalog, RentalPriceId, BuyPriceId FROM VHS;", connection); // Här skapar vi command för SELECT
 
         // Kör Sql frågan och läser resultatet
         using MySqlDataReader reader = command.ExecuteReader();
@@ -21,10 +21,11 @@ public class MovieRepository
             String title = reader.GetString("Title");
             String description = reader.GetString("Description");
             bool inCatalog = reader.GetBoolean("InCatalog");
-            // int priceId = reader.GetInt("PriceId");
+            int RentalpriceId = reader.GetInt32(reader.GetOrdinal("RentalPriceId"));
+            int BuyPriceId = reader.GetInt32(reader.GetOrdinal("BuyPriceId"));
 
             // Skapar ett VHS objekt och lägger till det i listan
-            vHs.Add(new VHS(id, title, description, inCatalog));
+            vHs.Add(new VHS(id, title, description, inCatalog, RentalPriceId, BuyPriceId));
         }
 
         // Skickar tillbaka listan

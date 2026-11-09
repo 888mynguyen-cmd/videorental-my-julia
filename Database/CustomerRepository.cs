@@ -1,31 +1,35 @@
-// Sql command för kund
-
-// Lägg till, ta bort, uppdatera customer
 
 using System;
 using System.Data.Common;
 using MySqlConnector;
 
-public class CustomerRepository
+public class DatabaseConnection
 {
-       private static DbConnection GetConnection()
-    {
-        string connectionString = File.ReadAllText("../database.txt");
+    private readonly string connectionString =
+        $"""
+        Server=comet-direct.usbx.me;
+        Port=17815;
+        Database=yh_julia_Videoteket;
+        User=yh_julia;
+        Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}
+        """;
 
+    public DbConnection GetConnection()
+    {
         return new MySqlConnection(connectionString);
     }
 
-       public void AddCustomer(Customer customer)
+    public void AddCustomer(Customer customer)
     {
-        using DbConnection conn = GetConnection();
-        conn.Open();
+        using MySqlConnection connection = new MySqlConnection(connectionString);
+        connection.Open();
 
         string sql = """
             INSERT INTO Customer (Name, PhoneNumber, Address)
             VALUES (@Name, @PhoneNumber, @Address)
             """;
 
-        using MySqlCommand command = new MySqlCommand(sql, (MySqlConnection)conn);
+        using MySqlCommand command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@Name", customer.Name);
         command.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
         command.Parameters.AddWithValue("@Address", customer.Address);
