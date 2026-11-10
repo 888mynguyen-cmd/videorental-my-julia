@@ -53,5 +53,14 @@ public class MovieRepository
     }
 
 
+    public static void RemoveMovie(MySqlConnection connection, int removeMovieId)
+    {
+        using MySqlCommand command = new MySqlCommand($"""
+        DELETE FROM VHS WHERE Id = {removeMovieId} 
+        """, connection);
+
+        command.ExecuteNonQuery();
+    }
+
 
 }

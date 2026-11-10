@@ -79,12 +79,18 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("Finns den inne?");
                     bool changeInCatalog = bool.Parse(Console.ReadLine());
 
-                    MovieRepository.ChangeMovie( connection,changeId, changeTitle, changeDescription, changeInCatalog);
+                    MovieRepository.ChangeMovie(connection,changeId, changeTitle, changeDescription, changeInCatalog);
                 }
 
                 else if (FilmChoice == 4)
                 {
                     // Ta bort en film
+                    Console.WriteLine("Vilken film vill du ta bort?");
+                    int removeMovieId = Convert.ToInt32(Console.ReadLine());
+
+                    MovieRepository.RemoveMovie(connection, removeMovieId);
+                    Console.WriteLine("Filmen har tagits bort!");
+
                 }
             }
 
