@@ -3,25 +3,23 @@ using System;
 using System.Data.Common;
 using MySqlConnector;
 
-public class DatabaseConnection
+public class CustomerRepository
 {
-    private readonly string connectionString =
-        $"""
-        Server=comet-direct.usbx.me;
-        Port=17815;
-        Database=yh_julia_Videoteket;
-        User=yh_julia;
-        Password={Environment.GetEnvironmentVariable("DB_PASSWORD")}
-        """;
 
-    public DbConnection GetConnection()
+    private static DbConnection GetConnection()
     {
+        string? connectionString = Environment.GetEnvironmentVariable("VIDEORENTAL_CONNECTION_STRING");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Set the VIDEORENTAL_CONNECTION_STRING environment variable.");
+        }
+
         return new MySqlConnection(connectionString);
     }
 
     public void AddCustomer(Customer customer)
     {
-        using MySqlConnection connection = new MySqlConnection(connectionString);
+        using MySqlConnection connection = (MySqlConnection)GetConnection();
         connection.Open();
 
         string sql = """
