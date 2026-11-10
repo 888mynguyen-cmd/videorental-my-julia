@@ -48,7 +48,7 @@ public class Menu // Här har vi själva menyn
                 else if (FilmChoice == 2)
                 {
                     Console.WriteLine("Lägg till id på film ");
-                    int Id = Convert.ToInt32(Console.ReadLine());
+                    int Id = Convert.ToInt32(Console.ReadLine() ?? "");
 
                     Console.WriteLine("Lägg till en titel på film ");
                     string Title = Console.ReadLine() ?? "";
@@ -56,14 +56,17 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("Lägg till en beskrivning på film ");
                     string Description = Console.ReadLine() ?? "";
 
-                    MovieRepository.AddMovie(connection, Id, Title, Description);
+                    Console.WriteLine("Vilket id på priset till filmen?"); // 1 Är Pris för Ny Film, 2 är Pris för gammal film
+                    int RentalPriceId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                    MovieRepository.AddMovie(connection, Id, Title, Description, RentalPriceId);
                 }
 
                 else if (FilmChoice == 3)
                 {
                     // Ändra en film
                     Console.WriteLine("Vilken film vill du ändra?");
-                    int changeId = Convert.ToInt32(Console.ReadLine());
+                    int changeId = Convert.ToInt32(Console.ReadLine() ?? "");
 
                     Console.WriteLine("Vad vill du ändra filmens titel till?");
                     string changeTitle = Console.ReadLine() ?? "";
@@ -71,7 +74,11 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("Vad vill du ändra filmens beskrivning till?");
                     string changeDescription = Console.ReadLine() ?? "";
 
-                    MovieRepository.ChangeMovie(connection,changeId, changeTitle, changeDescription);
+                    Console.WriteLine("Vad vill du ändra filmens Pris till?");
+                    int changeRentalPriceId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+
+                    MovieRepository.ChangeMovie(connection,changeId, changeTitle, changeDescription, changeRentalPriceId);
                 }
 
                 else if (FilmChoice == 4)

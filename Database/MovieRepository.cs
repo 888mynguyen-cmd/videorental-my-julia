@@ -5,7 +5,7 @@ public class MovieRepository
 {    public static List<Movie> ShowMovie(MySqlConnection connection)
     {
         
-        using MySqlCommand command = new MySqlCommand("SELECT Id, Title, Description FROM Movie;", connection); // Här skapar vi command för SELECT
+        using MySqlCommand command = new MySqlCommand("SELECT Id, Title, Description, RentalPriceId FROM Movie;", connection); // Här skapar vi command för SELECT
 
         // Kör Sql frågan och läser resultatet
         using MySqlDataReader reader = command.ExecuteReader();
@@ -20,10 +20,10 @@ public class MovieRepository
             int id = reader.GetInt32("Id");
             String title = reader.GetString("Title");
             String description = reader.GetString("Description");
-            // int priceId = reader.GetInt("PriceId");
+            int rentalPriceId  = reader.GetInt32("RentalPriceId");
 
             // Skapar ett Movie objekt och lägger till det i listan
-            movie.Add(new Movie(id, title, description));
+            movie.Add(new Movie(id, title, description, rentalPriceId ));
         }
 
         // Skickar tillbaka listan
@@ -31,18 +31,18 @@ public class MovieRepository
     }
 
     // Lägg till
-    public static void AddMovie(MySqlConnection connection, int id, string title, string description)
+    public static void AddMovie(MySqlConnection connection, int id, string title, string description, int rentalPriceId )
     {   
-        using MySqlCommand command = new MySqlCommand($"INSERT INTO Movie (Id, Title, Description)                                       VALUES ({id}, '{title}', '{description}')", connection);
+        using MySqlCommand command = new MySqlCommand($"INSERT INTO Movie (Id, Title, Description, RentalPriceId )                  VALUES ({id}, '{title}', '{description}', '{rentalPriceId }')", connection);
 
         command.ExecuteNonQuery();
     }
 
-    public static void ChangeMovie(MySqlConnection connection, int changeId, string changeTitle, string changeDescription)
+    public static void ChangeMovie(MySqlConnection connection, int changeId, string changeTitle, string changeDescription, int changeRentalPriceId)
     {
 
         using MySqlCommand command = new MySqlCommand($"""
-        UPDATE Movie Set Title = '{changeTitle}', Description = '{changeDescription}' WHERE Id = {changeId}
+        UPDATE Movie Set Title = '{changeTitle}', Description = '{changeDescription}', RentalPriceId = '{changeRentalPriceId}' WHERE Id = {changeId}
         """, connection);
 
         command.ExecuteNonQuery();
