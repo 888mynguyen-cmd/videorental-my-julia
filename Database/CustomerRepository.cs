@@ -17,11 +17,8 @@ public class CustomerRepository
         return new MySqlConnection(connectionString);
     }
 
-    public void AddCustomer(Customer customer)
+    public void AddCustomer(MySqlConnection connection, Customer customer)
     {
-        using MySqlConnection connection = (MySqlConnection)GetConnection();
-        connection.Open();
-
         string sql = """
             INSERT INTO Customer (Name, PhoneNumber, Address)
             VALUES (@Name, @PhoneNumber, @Address)
@@ -35,16 +32,15 @@ public class CustomerRepository
         command.ExecuteNonQuery();
     }
 
-    public void GetAllCustomers()
+    public void GetAllCustomers(MySqlConnection connection)
     {
-        using DbConnection conn = GetConnection();
-        conn.Open();
+       
 
         string sql = """
             SELECT * FROM Customer
             """;
 
-        using MySqlCommand command = new MySqlCommand(sql, (MySqlConnection)conn);
+        using MySqlCommand command = new MySqlCommand(sql, connection);
         using MySqlDataReader reader = command.ExecuteReader();
 
         while (reader.Read())
@@ -54,11 +50,9 @@ public class CustomerRepository
             );
         }
     }
-    public void UpdateCustomer(Customer customer)
+    public void UpdateCustomer(MySqlConnection connection,Customer customer)
     {
-        using DbConnection conn = GetConnection();
-        conn.Open();
-
+       
         string sql = """
             UPDATE Customer
             SET Name = @Name,
@@ -67,7 +61,7 @@ public class CustomerRepository
             WHERE Id = @Id
             """;
 
-        using MySqlCommand command = new MySqlCommand(sql, (MySqlConnection)conn);
+        using MySqlCommand command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@Id", customer.Id);
         command.Parameters.AddWithValue("@Name", customer.Name);
         command.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
@@ -77,16 +71,13 @@ public class CustomerRepository
         Console.WriteLine(rows > 0 ? "Uppdatera kunden!" : "Kunden hittades inte!");
     }
 
-    public void DeleteCustomer(int id)
+    public void DeleteCustomer(MySqlConnection connection, int id)
     {
-        using DbConnection conn = GetConnection();
-        conn.Open();
-
         string sql = """
             DELETE FROM Customer WHERE Id = @Id
             """;
 
-        using MySqlCommand command = new MySqlCommand(sql, (MySqlConnection)conn);
+        using MySqlCommand command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@Id", id);
 
         int rows = command.ExecuteNonQuery();

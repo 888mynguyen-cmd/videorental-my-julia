@@ -94,6 +94,10 @@ public class Menu // Här har vi själva menyn
             }
                 else if (Choice == 2)
                 {
+                    CustomerRepository customerRepository = new CustomerRepository();
+                    int CustomerChoice = 0;
+                    while (CustomerChoice != 5)
+                {
             
                 Console.WriteLine("---------Kunder--------");
                 Console.WriteLine("Välj nedan?");
@@ -101,12 +105,16 @@ public class Menu // Här har vi själva menyn
                 Console.WriteLine("2. Lägg till kund");
                 Console.WriteLine("3. Ändra kund");
                 Console.WriteLine("4. Ta bort kund");
+                Console.WriteLine("Tillbaka till huvudmenyn!");
                 Console.WriteLine("Välj alternativ: ");
-                int CustomerChoice = Convert.ToInt32(Console.ReadLine());
-                CustomerRepository customerRepository = new CustomerRepository();
+                if (!int.TryParse(Console.ReadLine(), out CustomerChoice))
+                {
+                    Console.WriteLine("Ange ett giltigt nummer!");
+                    continue;
+                }
                 if (CustomerChoice == 1)
                 {
-                    customerRepository.GetAllCustomers();
+                    customerRepository.GetAllCustomers(connection);
                 }
                 else if (CustomerChoice == 2)
                 {
@@ -117,7 +125,7 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("Ange kundens adress:");
                     string Address = Console.ReadLine() ?? "";
                     Customer customer = new Customer(0, Name, PhoneNumber, Address);
-                customerRepository.AddCustomer(customer);
+                customerRepository.AddCustomer(connection, customer);
                 Console.WriteLine("Kunden har lagts till!");
                 }
                 else if (CustomerChoice == 3)
@@ -131,18 +139,22 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("Ange ny adress:");
                     string changeAddress = Console.ReadLine() ?? "";
                     Customer customer = new Customer(changeId, changeName, changePhone, changeAddress);
-                customerRepository.UpdateCustomer(customer);
+                customerRepository.UpdateCustomer(connection,customer);
                 }
                 else if (CustomerChoice == 4)
                 {
                     Console.WriteLine("Vilken kund vill du ta bort? Ange ID:");
                     int removeCustomerId = Convert.ToInt32(Console.ReadLine());
-                    customerRepository.DeleteCustomer(removeCustomerId);
+                    customerRepository.DeleteCustomer(connection, removeCustomerId);
+                }
+                else if (CustomerChoice==5)
+                {
+                    Console.WriteLine("Tillbaka till huvudmenyn!");
                 }
                 else
                 {
                     Console.WriteLine("Ogiltigt alternativ!");
-                    continue;
+                }
                 }
             }
 
