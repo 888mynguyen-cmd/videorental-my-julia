@@ -35,10 +35,10 @@ public class Menu // Här har vi själva menyn
                 if (FilmChoice == 1)
                 {
                     // Anropar ShowMovie metoden i MovieRepository och sparar listan med filmer
-                    List<VHS> movies = MovieRepository.ShowMovie(connection);
+                    List<Movie> movies = MovieRepository.ShowMovie(connection);
 
                     // Går igenom varje film i listan, en i taget
-                    foreach(VHS movie in movies)
+                    foreach(Movie movie in movies)
                     {
                         Console.WriteLine($"Titel: ('{movie.Title}', Beskrivning: '{movie.Description}')");
                         
@@ -56,10 +56,7 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("Lägg till en beskrivning på film ");
                     string Description = Console.ReadLine() ?? "";
 
-                    Console.WriteLine("Finns filmen på lager?");
-                    bool InCatalog = bool.Parse(Console.ReadLine() ?? "");
-
-                    MovieRepository.AddMovie(connection, Id, Title, Description, InCatalog);
+                    MovieRepository.AddMovie(connection, Id, Title, Description);
                 }
 
                 else if (FilmChoice == 3)
@@ -74,10 +71,7 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("Vad vill du ändra filmens beskrivning till?");
                     string changeDescription = Console.ReadLine() ?? "";
 
-                    Console.WriteLine("Finns den inne?");
-                    bool changeInCatalog = bool.Parse(Console.ReadLine() ?? "");
-
-                    MovieRepository.ChangeMovie(connection,changeId, changeTitle, changeDescription, changeInCatalog);
+                    MovieRepository.ChangeMovie(connection,changeId, changeTitle, changeDescription);
                 }
 
                 else if (FilmChoice == 4)
