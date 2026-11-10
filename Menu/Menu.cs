@@ -63,6 +63,29 @@ public class Menu // Här har vi själva menyn
 
                     MovieRepository.AddMovie(connection, Id, Title, Description, InCatalog);
                 }
+
+                else if (FilmChoice == 3)
+                {
+                    // Ändra en film
+                    Console.WriteLine("Vilken film vill du ändra?");
+                    int changeId = Convert.ToInt32(Console.ReadLine());
+
+                    Console.WriteLine("Vad vill du ändra filmens titel till?");
+                    string changeTitle = Console.ReadLine();
+                    
+                    Console.WriteLine("Vad vill du ändra filmens beskrivning till?");
+                    string changeDescription = Console.ReadLine();
+
+                    Console.WriteLine("Finns den inne?");
+                    bool changeInCatalog = bool.Parse(Console.ReadLine());
+
+                    MovieRepository.ChangeMovie( connection,changeId, changeTitle, changeDescription, changeInCatalog);
+                }
+
+                else if (FilmChoice == 4)
+                {
+                    // Ta bort en film
+                }
             }
 
             else if (Choice == 2)

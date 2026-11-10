@@ -41,4 +41,17 @@ public class MovieRepository
         command.ExecuteNonQuery();
     }
 
+    public static void ChangeMovie(MySqlConnection connection, int changeId, string changeTitle, string changeDescription, bool changeInCatalog)
+    {
+        int ChangeInCatalog = changeInCatalog ? 1 : 0; // Om inCatalog är true blir värdet 1, annars 0.
+
+        using MySqlCommand command = new MySqlCommand($"""
+        UPDATE VHS Set Title = '{changeTitle}', Description = '{changeDescription}', InCatalog = {ChangeInCatalog} WHERE Id = {changeId}
+        """, connection);
+
+        command.ExecuteNonQuery();
+    }
+
+
+
 }
