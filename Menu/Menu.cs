@@ -9,7 +9,7 @@ public class Menu // Här har vi själva menyn
             Console.WriteLine("---------Videoteket--------");
             Console.WriteLine("Vad vill du göra idag?");
 
-            Console.WriteLine("1. Visa alla filmer");
+            Console.WriteLine("1. Filmer");
             Console.WriteLine("2. ");
             Console.WriteLine("3. ");
             Console.WriteLine("4. ");
@@ -22,14 +22,46 @@ public class Menu // Här har vi själva menyn
 
             if (Choice == 1)
             {
-                // Anropar ShowMovie metoden i MovieRepository och sparar listan med filmer
-                List<VHS> movies = MovieRepository.ShowMovie(connection);
+                Console.WriteLine("---------Filmer--------");
+                Console.WriteLine("Välj nedan?");
 
-                // Går igenom varje film i listan, en i taget
-                foreach(VHS movie in movies)
+                Console.WriteLine("1. Visa alla Filmer");
+                Console.WriteLine("2. Lägg till film");
+                Console.WriteLine("3. Ändra film");
+                Console.WriteLine("4. Ta bort");
+                Console.WriteLine("5. ");
+
+                Console.WriteLine("Välj alternativ: ");
+                int FilmChoice = Convert.ToInt32(Console.ReadLine());
+
+                if (FilmChoice == 1)
                 {
-                    Console.WriteLine($"Titel: ('{movie.Title}', Beskrivning: '{movie.Description}')");
-                    
+                    // Anropar ShowMovie metoden i MovieRepository och sparar listan med filmer
+                    List<VHS> movies = MovieRepository.ShowMovie(connection);
+
+                    // Går igenom varje film i listan, en i taget
+                    foreach(VHS movie in movies)
+                    {
+                        Console.WriteLine($"Titel: ('{movie.Title}', Beskrivning: '{movie.Description}')");
+                        
+                    }
+                }
+
+                else if (FilmChoice == 2)
+                {
+                    Console.WriteLine("Lägg till id på film ");
+                    int Id = Convert.ToInt32(Console.ReadLine());
+
+                    Console.WriteLine("Lägg till en titel på film ");
+                    string Title = Console.ReadLine();
+
+                    Console.WriteLine("Lägg till en beskrivning på film ");
+                    string Description = Console.ReadLine();
+
+                    Console.WriteLine("Finns filmen på lager?");
+                    bool InCatalog = bool.Parse(Console.ReadLine());
+
+                    MovieRepository.AddMovie(connection, Id, Title, Description, InCatalog);
                 }
             }
 

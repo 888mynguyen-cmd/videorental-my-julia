@@ -1,8 +1,6 @@
 // Sql comman för film
 using MySqlConnector;
 
-// Lägg till, ta bort, uppdatera film
-
 public class MovieRepository
 {    public static List<VHS> ShowMovie(MySqlConnection connection)
     {
@@ -30,6 +28,17 @@ public class MovieRepository
         }
 
         // Skickar tillbaka listan
-        return vHs;
+        return vHs; 
     }
+
+    // Lägg till
+    public static void AddMovie(MySqlConnection connection, int id, string title, string description, bool inCatalog)
+    {   
+        int InCatalog = inCatalog ? 1 : 0; // Om inCatalog är true blir värdet 1, annars 0.
+
+        using MySqlCommand command = new MySqlCommand($"INSERT INTO VHS (Id, Title, Description, InCatalog)                              VALUES ({id}, '{title}', '{description}', {InCatalog})", connection);
+
+        command.ExecuteNonQuery();
+    }
+
 }
