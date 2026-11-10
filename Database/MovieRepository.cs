@@ -2,16 +2,16 @@
 using MySqlConnector;
 
 public class MovieRepository
-{    public static List<VHS> ShowMovie(MySqlConnection connection)
+{    public static List<Movie> ShowMovie(MySqlConnection connection)
     {
         
-        using MySqlCommand command = new MySqlCommand("SELECT Id, Title, Description, Incatalog, RentalPriceId, BuyPriceId FROM VHS;", connection); // Här skapar vi command för SELECT
+        using MySqlCommand command = new MySqlCommand("SELECT Id, Title, Description, RentalPriceId FROM Movie;", connection); // Här skapar vi command för SELECT
 
         // Kör Sql frågan och läser resultatet
         using MySqlDataReader reader = command.ExecuteReader();
 
         // Skapar en tom lista där vi ska spara filmerna
-        List<VHS> vHs = new List<VHS>();
+        List<Movie> movie = new List<Movie>();
 
         // Går igenom varje rad som hämtats från databasen
         while(reader.Read())
@@ -20,34 +20,29 @@ public class MovieRepository
             int id = reader.GetInt32("Id");
             String title = reader.GetString("Title");
             String description = reader.GetString("Description");
-            bool inCatalog = reader.GetBoolean("InCatalog");
-            int RentalpriceId = reader.GetInt32(reader.GetOrdinal("RentalPriceId"));
-            int BuyPriceId = reader.GetInt32(reader.GetOrdinal("BuyPriceId"));
+            int rentalPriceId  = reader.GetInt32("RentalPriceId");
 
-            // Skapar ett VHS objekt och lägger till det i listan
-            vHs.Add(new VHS(id, title, description, inCatalog, RentalPriceId, BuyPriceId));
+            // Skapar ett Movie objekt och lägger till det i listan
+            movie.Add(new Movie(id, title, description, rentalPriceId ));
         }
 
         // Skickar tillbaka listan
-        return vHs; 
+        return movie; 
     }
 
     // Lägg till
-    public static void AddMovie(MySqlConnection connection, int id, string title, string description, bool inCatalog)
+    public static void AddMovie(MySqlConnection connection, int id, string title, string description, int rentalPriceId )
     {   
-        int InCatalog = inCatalog ? 1 : 0; // Om inCatalog är true blir värdet 1, annars 0.
-
-        using MySqlCommand command = new MySqlCommand($"INSERT INTO VHS (Id, Title, Description, InCatalog)                              VALUES ({id}, '{title}', '{description}', {InCatalog})", connection);
+        using MySqlCommand command = new MySqlCommand($"INSERT INTO Movie (Id, Title, Description, RentalPriceId )                  VALUES ({id}, '{title}', '{description}', '{rentalPriceId }')", connection);
 
         command.ExecuteNonQuery();
     }
 
-    public static void ChangeMovie(MySqlConnection connection, int changeId, string changeTitle, string changeDescription, bool changeInCatalog)
+    public static void ChangeMovie(MySqlConnection connection, int changeId, string changeTitle, string changeDescription, int changeRentalPriceId)
     {
-        int ChangeInCatalog = changeInCatalog ? 1 : 0; // Om inCatalog är true blir värdet 1, annars 0.
 
         using MySqlCommand command = new MySqlCommand($"""
-        UPDATE VHS Set Title = '{changeTitle}', Description = '{changeDescription}', InCatalog = {ChangeInCatalog} WHERE Id = {changeId}
+        UPDATE Movie Set Title = '{changeTitle}', Description = '{changeDescription}', RentalPriceId = '{changeRentalPriceId}' WHERE Id = {changeId}
         """, connection);
 
         command.ExecuteNonQuery();
@@ -57,7 +52,7 @@ public class MovieRepository
     public static void RemoveMovie(MySqlConnection connection, int removeMovieId)
     {
         using MySqlCommand command = new MySqlCommand($"""
-        DELETE FROM VHS WHERE Id = {removeMovieId} 
+        DELETE FROM Movie WHERE Id = {removeMovieId} 
         """, connection);
 
         command.ExecuteNonQuery();
