@@ -1,8 +1,6 @@
 // Sql comman för film
 using MySqlConnector;
 
-// Lägg till, ta bort, uppdatera film
-
 public class MovieRepository
 {    public static List<VHS> ShowMovie(MySqlConnection connection)
     {
@@ -30,6 +28,39 @@ public class MovieRepository
         }
 
         // Skickar tillbaka listan
-        return vHs;
+        return vHs; 
     }
+
+    // Lägg till
+    public static void AddMovie(MySqlConnection connection, int id, string title, string description, bool inCatalog)
+    {   
+        int InCatalog = inCatalog ? 1 : 0; // Om inCatalog är true blir värdet 1, annars 0.
+
+        using MySqlCommand command = new MySqlCommand($"INSERT INTO VHS (Id, Title, Description, InCatalog)                              VALUES ({id}, '{title}', '{description}', {InCatalog})", connection);
+
+        command.ExecuteNonQuery();
+    }
+
+    public static void ChangeMovie(MySqlConnection connection, int changeId, string changeTitle, string changeDescription, bool changeInCatalog)
+    {
+        int ChangeInCatalog = changeInCatalog ? 1 : 0; // Om inCatalog är true blir värdet 1, annars 0.
+
+        using MySqlCommand command = new MySqlCommand($"""
+        UPDATE VHS Set Title = '{changeTitle}', Description = '{changeDescription}', InCatalog = {ChangeInCatalog} WHERE Id = {changeId}
+        """, connection);
+
+        command.ExecuteNonQuery();
+    }
+
+
+    public static void RemoveMovie(MySqlConnection connection, int removeMovieId)
+    {
+        using MySqlCommand command = new MySqlCommand($"""
+        DELETE FROM VHS WHERE Id = {removeMovieId} 
+        """, connection);
+
+        command.ExecuteNonQuery();
+    }
+
+
 }

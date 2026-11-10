@@ -19,7 +19,6 @@ public class Program
             connection.Open();
 
             Menu.ShowMenu(connection);
-        
     }
 
 
