@@ -74,8 +74,8 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("Vad vill du ändra filmens beskrivning till?");
                     string changeDescription = Console.ReadLine() ?? "";
 
-                    Console.WriteLine("Vad vill du ändra filmens Pris till?");
-                    int changeRentalPriceId = Convert.ToInt32(Console.ReadLine() ?? "");
+                    Console.WriteLine("Finns den inne?");
+                    bool changeInCatalog = bool.Parse(Console.ReadLine() ?? "");
 
 
                     MovieRepository.ChangeMovie(connection,changeId, changeTitle, changeDescription, changeRentalPriceId);
