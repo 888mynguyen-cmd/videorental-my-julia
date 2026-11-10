@@ -1,4 +1,4 @@
-class BuyRent
+class Rent
 {
     public int Id {get;set;}
     public DateTime Date { get;set;}
@@ -7,7 +7,7 @@ class BuyRent
     public bool IdChecked {get; set;}
     public int CustomerId {get; set;}
 
-    public BuyRent (int id, DateTime date, decimal total, bool paid, bool idchecked, int customerId)
+    public Rent (int id, DateTime date, decimal total, bool paid, bool idchecked, int customerId)
     {
         Id = id;
         Date = date;
