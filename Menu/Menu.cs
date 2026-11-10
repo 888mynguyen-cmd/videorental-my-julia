@@ -53,13 +53,13 @@ public class Menu // Här har vi själva menyn
                     int Id = Convert.ToInt32(Console.ReadLine());
 
                     Console.WriteLine("Lägg till en titel på film ");
-                    string Title = Console.ReadLine();
+                    string Title = Console.ReadLine() ?? "";
 
                     Console.WriteLine("Lägg till en beskrivning på film ");
-                    string Description = Console.ReadLine();
+                    string Description = Console.ReadLine() ?? "";
 
                     Console.WriteLine("Finns filmen på lager?");
-                    bool InCatalog = bool.Parse(Console.ReadLine());
+                    bool InCatalog = bool.Parse(Console.ReadLine() ?? "");
 
                     MovieRepository.AddMovie(connection, Id, Title, Description, InCatalog);
                 }
@@ -71,13 +71,13 @@ public class Menu // Här har vi själva menyn
                     int changeId = Convert.ToInt32(Console.ReadLine());
 
                     Console.WriteLine("Vad vill du ändra filmens titel till?");
-                    string changeTitle = Console.ReadLine();
+                    string changeTitle = Console.ReadLine() ?? "";
                     
                     Console.WriteLine("Vad vill du ändra filmens beskrivning till?");
-                    string changeDescription = Console.ReadLine();
+                    string changeDescription = Console.ReadLine() ?? "";
 
                     Console.WriteLine("Finns den inne?");
-                    bool changeInCatalog = bool.Parse(Console.ReadLine());
+                    bool changeInCatalog = bool.Parse(Console.ReadLine() ?? "");
 
                     MovieRepository.ChangeMovie(connection,changeId, changeTitle, changeDescription, changeInCatalog);
                 }
@@ -86,7 +86,7 @@ public class Menu // Här har vi själva menyn
                 {
                     // Ta bort en film
                     Console.WriteLine("Vilken film vill du ta bort?");
-                    int removeMovieId = Convert.ToInt32(Console.ReadLine());
+                    int removeMovieId = Convert.ToInt32(Console.ReadLine() ?? "");
 
                     MovieRepository.RemoveMovie(connection, removeMovieId);
                     Console.WriteLine("Filmen har tagits bort!");
