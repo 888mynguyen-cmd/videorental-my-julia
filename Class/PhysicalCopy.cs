@@ -1,17 +1,18 @@
 using System.Data.Common;
 
-public class FilmCode
+public class PhysicalCopy
 {
     public int Id {get; set;}
-    public string BanCode {get; set;}
+    public string BarCode {get; set;}
+    
     public int MovieId {get; set;} 
     public int FilmStatus {get; set;}
 
-    public FilmCode (int id, string banCode, int movieId, int filmStatus)
+    public PhysicalCopy (int id, string barCode, int movieId, int filmStatus)
     {
 
     Id = id;
-    BanCode = banCode;
+    BarCode = barCode;
     MovieId = movieId;
     FilmStatus = filmStatus;
     }
