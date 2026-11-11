@@ -44,14 +44,12 @@ public class Menu // Här har vi själva menyn
                         foreach (Movie movie in movies)
                         {
                             Console.WriteLine(
-                                $"Titel: ('{movie.Title}', Beskrivning: '{movie.Description}')");
+                                $"{movie.Id} | {movie.Title} | {movie.Description} | PrisId: {movie.RentalPriceId}");
                         }
                     }
                     else if (FilmChoice == 2)
                     {
                         // Lägg till film
-                        Console.WriteLine("Lägg till id på film ");
-                        int Id = Convert.ToInt32(Console.ReadLine() ?? "");
 
                         Console.WriteLine("Lägg till en titel på film ");
                         string Title = Console.ReadLine() ?? "";
@@ -65,7 +63,6 @@ public class Menu // Här har vi själva menyn
 
                         MovieRepository.AddMovie(
                             connection,
-                            Id,
                             Title,
                             Description,
                             RentalPriceId);

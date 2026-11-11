@@ -31,9 +31,9 @@ public class MovieRepository
     }
 
     // Lägg till
-    public static void AddMovie(MySqlConnection connection, int id, string title, string description, int rentalPriceId )
+    public static void AddMovie(MySqlConnection connection, string title, string description, int rentalPriceId )
     {   
-        using MySqlCommand command = new MySqlCommand($"INSERT INTO Movie (Id, Title, Description, RentalPriceId )                  VALUES ({id}, '{title}', '{description}', '{rentalPriceId }')", connection);
+        using MySqlCommand command = new MySqlCommand($"INSERT INTO Movie (Title, Description, RentalPriceId )                         VALUES ('{title}', '{description}', '{rentalPriceId }')", connection);
 
         command.ExecuteNonQuery();
     }
@@ -42,7 +42,7 @@ public class MovieRepository
     {
 
         using MySqlCommand command = new MySqlCommand($"""
-        UPDATE Movie Set Title = '{changeTitle}', Description = '{changeDescription}', RentalPriceId = '{changeRentalPriceId}' WHERE Id = {changeId}
+        UPDATE Movie Set Title = '{changeTitle}', Description = '{changeDescription}', RentalPriceId = {changeRentalPriceId} WHERE Id = {changeId}
         """, connection);
 
         command.ExecuteNonQuery();
