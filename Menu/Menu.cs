@@ -21,84 +21,95 @@ public class Menu // Här har vi själva menyn
 
             if (Choice == 1)
             {
-                Console.WriteLine("---------Filmer--------");
-                Console.WriteLine("Välj nedan?");
-
-                Console.WriteLine("1. Visa alla Filmer");
-                Console.WriteLine("2. Lägg till film");
-                Console.WriteLine("3. Ändra film");
-                Console.WriteLine("4. Ta bort");
-                Console.WriteLine("5. ");
-
-                Console.WriteLine("Välj alternativ: ");
-                int FilmChoice = Convert.ToInt32(Console.ReadLine());
-
-                if (FilmChoice == 1)
+                
+                while(true)
                 {
-                    // Visa alla filmer
-                    List<Movie> movies = MovieRepository.ShowMovie(connection);
+                    Console.WriteLine("---------Filmer--------");
+                    Console.WriteLine("Välj nedan?");
 
-                    foreach (Movie movie in movies)
+                    Console.WriteLine("1. Visa alla Filmer");
+                    Console.WriteLine("2. Lägg till film");
+                    Console.WriteLine("3. Ändra film");
+                    Console.WriteLine("4. Ta bort");
+                    Console.WriteLine("5. Gå tillbaka till huvudmenyn");
+
+                    Console.WriteLine("Välj alternativ: ");
+                    int FilmChoice = Convert.ToInt32(Console.ReadLine());
+                        
+                    if (FilmChoice == 1)
                     {
-                        Console.WriteLine(
-                            $"Titel: ('{movie.Title}', Beskrivning: '{movie.Description}')");
+                        // Visa alla filmer
+                        List<Movie> movies = MovieRepository.ShowMovie(connection);
+
+                        foreach (Movie movie in movies)
+                        {
+                            Console.WriteLine(
+                                $"Titel: ('{movie.Title}', Beskrivning: '{movie.Description}')");
+                        }
+                    }
+                    else if (FilmChoice == 2)
+                    {
+                        // Lägg till film
+                        Console.WriteLine("Lägg till id på film ");
+                        int Id = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                        Console.WriteLine("Lägg till en titel på film ");
+                        string Title = Console.ReadLine() ?? "";
+
+                        Console.WriteLine("Lägg till en beskrivning på film ");
+                        string Description = Console.ReadLine() ?? "";
+
+                        // 1 = Ny film, 2 = Gammal film
+                        Console.WriteLine("Vilket id på priset till filmen?");
+                        int RentalPriceId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                        MovieRepository.AddMovie(
+                            connection,
+                            Id,
+                            Title,
+                            Description,
+                            RentalPriceId);
+                    }
+                    else if (FilmChoice == 3)
+                    {
+                        // Ändra film
+                        Console.WriteLine("Vilken film vill du ändra?");
+                        int changeId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                        Console.WriteLine("Vad vill du ändra filmens titel till?");
+                        string changeTitle = Console.ReadLine() ?? "";
+
+                        Console.WriteLine("Vad vill du ändra filmens beskrivning till?");
+                        string changeDescription = Console.ReadLine() ?? "";
+
+                        Console.WriteLine("Vad vill du ändra filmens Pris till?");
+                        int changeRentalPriceId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                        MovieRepository.ChangeMovie(
+                            connection,
+                            changeId,
+                            changeTitle,
+                            changeDescription,
+                            changeRentalPriceId);
+                    }
+                    else if (FilmChoice == 4)
+                    {
+                        // Ta bort film
+                        Console.WriteLine("Vilken film vill du ta bort?");
+                        int removeMovieId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                        MovieRepository.RemoveMovie(connection, removeMovieId);
+                        Console.WriteLine("Filmen har tagits bort!");
+                    }
+                    else if (FilmChoice == 5) 
+                    {
+                        Console.WriteLine("Tillbaka till Huvudmenyn!");
+                        break;
                     }
                 }
-                else if (FilmChoice == 2)
-                {
-                    // Lägg till film
-                    Console.WriteLine("Lägg till id på film ");
-                    int Id = Convert.ToInt32(Console.ReadLine() ?? "");
-
-                    Console.WriteLine("Lägg till en titel på film ");
-                    string Title = Console.ReadLine() ?? "";
-
-                    Console.WriteLine("Lägg till en beskrivning på film ");
-                    string Description = Console.ReadLine() ?? "";
-
-                    // 1 = Ny film, 2 = Gammal film
-                    Console.WriteLine("Vilket id på priset till filmen?");
-                    int RentalPriceId = Convert.ToInt32(Console.ReadLine() ?? "");
-
-                    MovieRepository.AddMovie(
-                        connection,
-                        Id,
-                        Title,
-                        Description,
-                        RentalPriceId);
-                }
-                else if (FilmChoice == 3)
-                {
-                    // Ändra film
-                    Console.WriteLine("Vilken film vill du ändra?");
-                    int changeId = Convert.ToInt32(Console.ReadLine() ?? "");
-
-                    Console.WriteLine("Vad vill du ändra filmens titel till?");
-                    string changeTitle = Console.ReadLine() ?? "";
-
-                    Console.WriteLine("Vad vill du ändra filmens beskrivning till?");
-                    string changeDescription = Console.ReadLine() ?? "";
-
-                    Console.WriteLine("Vad vill du ändra filmens Pris till?");
-                    int changeRentalPriceId = Convert.ToInt32(Console.ReadLine() ?? "");
-
-                    MovieRepository.ChangeMovie(
-                        connection,
-                        changeId,
-                        changeTitle,
-                        changeDescription,
-                        changeRentalPriceId);
-                }
-                else if (FilmChoice == 4)
-                {
-                    // Ta bort film
-                    Console.WriteLine("Vilken film vill du ta bort?");
-                    int removeMovieId = Convert.ToInt32(Console.ReadLine() ?? "");
-
-                    MovieRepository.RemoveMovie(connection, removeMovieId);
-                    Console.WriteLine("Filmen har tagits bort!");
-                }
             }
+
+
             else if (Choice == 2)
             {
                 // Kundhantering
