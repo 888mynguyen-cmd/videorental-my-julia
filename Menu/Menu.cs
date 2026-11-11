@@ -22,6 +22,7 @@ public class Menu // Här har vi själva menyn
             if (Choice == 1)
             {
                 while (true)
+                while (true)
                 {
                     Console.WriteLine("---------Filmer--------");
                     Console.WriteLine("Välj nedan?");
@@ -35,6 +36,7 @@ public class Menu // Här har vi själva menyn
 
                     Console.WriteLine("Välj alternativ: ");
                     int FilmChoice = Convert.ToInt32(Console.ReadLine());
+
 
                     if (FilmChoice == 1)
                     {
