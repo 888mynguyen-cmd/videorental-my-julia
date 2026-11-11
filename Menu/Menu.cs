@@ -21,8 +21,7 @@ public class Menu // Här har vi själva menyn
 
             if (Choice == 1)
             {
-                
-                while(true)
+                while (true)
                 {
                     Console.WriteLine("---------Filmer--------");
                     Console.WriteLine("Välj nedan?");
@@ -35,7 +34,7 @@ public class Menu // Här har vi själva menyn
 
                     Console.WriteLine("Välj alternativ: ");
                     int FilmChoice = Convert.ToInt32(Console.ReadLine());
-                        
+
                     if (FilmChoice == 1)
                     {
                         // Visa alla filmer
@@ -50,7 +49,6 @@ public class Menu // Här har vi själva menyn
                     else if (FilmChoice == 2)
                     {
                         // Lägg till film
-
                         Console.WriteLine("Lägg till en titel på film ");
                         string Title = Console.ReadLine() ?? "";
 
@@ -98,15 +96,13 @@ public class Menu // Här har vi själva menyn
                         MovieRepository.RemoveMovie(connection, removeMovieId);
                         Console.WriteLine("Filmen har tagits bort!");
                     }
-                    else if (FilmChoice == 5) 
+                    else if (FilmChoice == 5)
                     {
                         Console.WriteLine("Tillbaka till Huvudmenyn!");
                         break;
                     }
                 }
             }
-
-
             else if (Choice == 2)
             {
                 // Kundhantering
@@ -198,108 +194,145 @@ public class Menu // Här har vi själva menyn
             }
             else if (Choice == 3)
             {
-                // Hyr film
-                Console.WriteLine("------- Hyr film ------");
+                // Hyr film - möjlighet att hyra flera filmer
+                bool continueRenting = true;
 
-                Console.Write("Ange kundens ID: ");
-                if (!int.TryParse(Console.ReadLine(), out int customerId))
+                while (continueRenting)
                 {
-                    Console.WriteLine("Ogiltigt kund-ID.");
-                    continue;
-                }
+                    Console.WriteLine("------- Hyr film ------");
 
-                Console.Write("Ange filmexemplarets ID: ");
-                if (!int.TryParse(Console.ReadLine(), out int physicalCopyId))
-                {
-                    Console.WriteLine("Ogiltigt filmexemplar-ID.");
-                    continue;
-                }
+                    Console.Write("Ange kundens ID: ");
 
-                Console.Write("Har kundens ID kontrollerats? (j/n): ");
-                bool idChecked =
-                    Console.ReadLine()?.Trim().ToLower() == "j";
+                    if (!int.TryParse(Console.ReadLine(), out int customerId))
+                    {
+                        Console.WriteLine("Ogiltigt kund-ID.");
+                    }
+                    else
+                    {
+                        Console.Write("Ange filmexemplarets ID: ");
 
-                Console.Write("Ange återlämningsdatum (åååå-mm-dd): ");
+                        if (!int.TryParse(Console.ReadLine(), out int physicalCopyId))
+                        {
+                            Console.WriteLine("Ogiltigt filmexemplar-ID.");
+                        }
+                        else
+                        {
+                            Console.Write("Har kundens ID kontrollerats? (j/n): ");
 
-                if (!DateTime.TryParseExact(
-                    Console.ReadLine(),
-                    "yyyy-MM-dd",
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    System.Globalization.DateTimeStyles.None,
-                    out DateTime returnDate))
-                {
-                    Console.WriteLine("Ogiltigt datum.");
-                    continue;
-                }
+                            bool idChecked =
+                                Console.ReadLine()?.Trim().ToLower() == "j";
 
-                if (returnDate.Date < DateTime.Today)
-                {
-                    Console.WriteLine(
-                        "Återlämningsdatum får inte vara tidigare än idag.");
-                    continue;
-                }
+                            Console.Write(
+                                "Ange återlämningsdatum (åååå-mm-dd): ");
 
-                Console.Write("Bekräfta uthyrningen? (j/n): ");
+                            if (!DateTime.TryParseExact(
+                                Console.ReadLine(),
+                                "yyyy-MM-dd",
+                                System.Globalization.CultureInfo.InvariantCulture,
+                                System.Globalization.DateTimeStyles.None,
+                                out DateTime returnDate))
+                            {
+                                Console.WriteLine("Ogiltigt datum.");
+                            }
+                            else if (returnDate.Date < DateTime.Today)
+                            {
+                                Console.WriteLine(
+                                    "Återlämningsdatum får inte vara tidigare än idag.");
+                            }
+                            else
+                            {
+                                Console.Write("Bekräfta uthyrningen? (j/n): ");
 
-                if (Console.ReadLine()?.Trim().ToLower() != "j")
-                {
-                    Console.WriteLine("Uthyrningen avbröts.");
-                    continue;
-                }
+                                if (Console.ReadLine()?.Trim().ToLower() != "j")
+                                {
+                                    Console.WriteLine("Uthyrningen avbröts.");
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        int rentId = RentalService.RentMovie(
+                                            connection,
+                                            customerId,
+                                            physicalCopyId,
+                                            idChecked,
+                                            returnDate);
 
-                try
-                {
-                    int rentId = RentalService.RentMovie(
-                        connection,
-                        customerId,
-                        physicalCopyId,
-                        idChecked,
-                        returnDate);
+                                        Console.WriteLine(
+                                            $"Uthyrningen registrerades! Hyres-ID: {rentId}");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine(
+                                            $"Kunde inte hyra ut filmen: {ex.Message}");
+                                    }
+                                }
+                            }
+                        }
+                    }
 
-                    Console.WriteLine(
-                        $"Uthyrningen registrerades! Hyres-ID: {rentId}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(
-                        $"Kunde inte hyra ut filmen: {ex.Message}");
+                    Console.Write(
+                        "Vill du hyra ut ytterligare en film? (j/n): ");
+
+                    string? answer = Console.ReadLine();
+
+                    if (answer?.Trim().ToLower() != "j")
+                    {
+                        continueRenting = false;
+                    }
                 }
             }
             else if (Choice == 4)
             {
                 // Återlämning
                 Console.WriteLine("------- Återlämning ------");
-                bool continueReturning = true;   //hantering för flera återlämningar
+
+                bool continueReturning = true;
+
                 while (continueReturning)
                 {
-                Console.Write("Ange filmexemplarets ID: ");
-                if (!int.TryParse(Console.ReadLine(), out int physicalCopyId))
-                {
-                    Console.WriteLine("Ogiltigt filmexemplar-ID.");
-                    
-                }
-                else
-                {
-                    try
+                    Console.Write("Ange filmexemplarets ID: ");
+
+                    if (!int.TryParse(Console.ReadLine(), out int physicalCopyId))
                     {
-                        ReturnService.ReturnMovie(connection,physicalCopyId);
+                        Console.WriteLine("Ogiltigt filmexemplar-ID.");
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine($"Kunde inte återlämna Film: {ex.Message}");
+                        try
+                        {
+                            ReturnService.ReturnMovie(connection, physicalCopyId);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(
+                                $"Kunde inte återlämna Film: {ex.Message}");
+                        }
                     }
-            }
-            Console.Write ("Vill du återlämna yttligare en film? (j/n); ");
-            string? answer = Console.ReadLine();
-            if(answer?.ToLower()!="j")
-                {
-                    continueReturning =false;
-                }
+
+                    Console.Write(
+                        "Vill du återlämna ytterligare en film? (j/n): ");
+
+                    string? answer = Console.ReadLine();
+
+                    if (answer?.ToLower() != "j")
+                    {
+                        continueReturning = false;
+                    }
                 }
             }
             else if (Choice == 5)
             {
                 // Försening
+                try
+                {
+                    LateFeeService.ShowLateRentals(connection);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(
+                        $"Kunde inte visa förseningar: {ex.Message}");
+                }
             }
             else
             {
