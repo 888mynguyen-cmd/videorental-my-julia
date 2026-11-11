@@ -2,6 +2,7 @@ using MySqlConnector;
 
 public class PhysicalCopyRepository
 {
+    // Visa alla PhysicalCopys
     public static List<PhysicalCopy> ShowPhysicalCopy(MySqlConnection connection)
     {
         using MySqlCommand command = new MySqlCommand("""
@@ -28,5 +29,19 @@ public class PhysicalCopyRepository
         }
         return physicalCopies;
     }
+
+    // Lägg till PhysicalCopy
+
+    public static void AddPhysicalCopy(MySqlConnection connection, string barCode, int movieId, int filmStatusId)
+    {
+        using MySqlCommand command = new MySqlCommand("INSERT INTO PhysicalCopy (BarCode, MovieId, FilmStatusId)                         VALUES (@barcode, @movieId, @filmStatusId);", connection);
+        
+        command.Parameters.AddWithValue("@barcode", barCode);
+        command.Parameters.AddWithValue("@movieId", movieId);
+        command.Parameters.AddWithValue("@filmStatusId",filmStatusId);
+
+        command.ExecuteNonQuery();
+    }
+    
     
 }

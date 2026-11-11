@@ -125,7 +125,23 @@ public class Menu // Här har vi själva menyn
 
                             else if (PhysicalChoice == 2)
                             {
-                                
+                                // Lägg till fysiskt exemplay
+                                Console.WriteLine("Ange Id för filmen som exemplaret tillhör:");
+                                int movieId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                                Console.WriteLine("Ange streckkoden för det fysiska exemplaret:");
+                                string barCode = Console.ReadLine() ?? "";
+
+                                Console.WriteLine("Ange Id för statusen på en film som finns!");
+                                int filmStatusId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+
+                                PhysicalCopyRepository.AddPhysicalCopy(
+                                    connection,
+                                    barCode,
+                                    movieId,
+                                    filmStatusId);
+
                             }
 
                             else if (PhysicalChoice == 3)
