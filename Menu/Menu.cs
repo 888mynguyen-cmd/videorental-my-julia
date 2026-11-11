@@ -103,7 +103,7 @@ public class Menu // Här har vi själva menyn
                     {
                         while(true)
                         {
-                            Console.WriteLine("---------Fysiska Exempel--------");
+                            Console.WriteLine("---------Fysiska Exemplar--------");
                             Console.WriteLine("Välj nedan?");
 
                             Console.WriteLine("1. Visa alla exemplar");
@@ -116,7 +116,13 @@ public class Menu // Här har vi själva menyn
 
                             if (PhysicalChoice == 1)
                             {
-                                
+                                List<PhysicalCopy> physicalCopies = PhysicalCopyRepository.ShowPhysicalCopy(connection);
+
+                                foreach (PhysicalCopy physicalCopy in physicalCopies)
+                                {
+                                    Console.WriteLine(
+                                        $"{physicalCopy.Id} | {physicalCopy.BarCode} | {physicalCopy.MovieId} | {physicalCopy.MovieTitle} | {physicalCopy.FilmStatusId} | {physicalCopy.StatusName}");
+                                }
                             }
 
                             else if (PhysicalChoice == 2)
@@ -135,7 +141,7 @@ public class Menu // Här har vi själva menyn
                             }
                         }
                     }
-                    
+
                     else if (FilmChoice == 6) 
                     {
                         Console.WriteLine("Tillbaka till Huvudmenyn!");
