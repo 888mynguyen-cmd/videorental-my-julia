@@ -31,7 +31,8 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("2. Lägg till film");
                     Console.WriteLine("3. Ändra film");
                     Console.WriteLine("4. Ta bort");
-                    Console.WriteLine("5. Gå tillbaka till huvudmenyn");
+                    Console.WriteLine("5. Hantera fysiska exempel");
+                    Console.WriteLine("6. Gå tillbaka till huvudmenyn");
 
                     Console.WriteLine("Välj alternativ: ");
                     int FilmChoice = Convert.ToInt32(Console.ReadLine());
@@ -98,7 +99,44 @@ public class Menu // Här har vi själva menyn
                         MovieRepository.RemoveMovie(connection, removeMovieId);
                         Console.WriteLine("Filmen har tagits bort!");
                     }
-                    else if (FilmChoice == 5) 
+                    else if (FilmChoice == 5)
+                    {
+                        while(true)
+                        {
+                            Console.WriteLine("---------Fysiska Exempel--------");
+                            Console.WriteLine("Välj nedan?");
+
+                            Console.WriteLine("1. Visa alla exemplar");
+                            Console.WriteLine("2. Lägg till exemplar");
+                            Console.WriteLine("3. Ändra exemplarets status");
+                            Console.WriteLine("4. Tillbaka till Filmer");
+
+                            Console.WriteLine("Välj alternativ: ");
+                            int PhysicalChoice = Convert.ToInt32(Console.ReadLine());
+
+                            if (PhysicalChoice == 1)
+                            {
+                                
+                            }
+
+                            else if (PhysicalChoice == 2)
+                            {
+                                
+                            }
+
+                            else if (PhysicalChoice == 3)
+                            {
+                                
+                            }
+                            else if (PhysicalChoice == 4)
+                            {
+                                Console.WriteLine("Tillbaka till Filmer!");
+                                break;
+                            }
+                        }
+                    }
+                    
+                    else if (FilmChoice == 6) 
                     {
                         Console.WriteLine("Tillbaka till Huvudmenyn!");
                         break;
