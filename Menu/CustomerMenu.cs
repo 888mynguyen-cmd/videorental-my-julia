@@ -28,7 +28,11 @@ public class CustomerMenu
 
             if (CustomerChoice == 1)
             {
-                customerRepository.GetAllCustomers(connection);
+                List<Customer> customers = customerRepository.GetAllCustomers(connection);
+                foreach(Customer customer in customers)
+                {
+                    Console.WriteLine($"{customer.Id}|{customer.Name}|{customer.PhoneNumber}|{customer.Address}");
+                }
             }
             else if (CustomerChoice == 2)
             {
@@ -47,8 +51,15 @@ public class CustomerMenu
                     PhoneNumber,
                     Address);
 
-                customerRepository.AddCustomer(connection, customer);
+                bool added = customerRepository.AddCustomer(connection, customer);
+                if (added)
+                {
                 Console.WriteLine("Kunden har lagts till!");
+                }
+                else
+                {
+                    Console.WriteLine("Kunden kunde inte läggas till!");
+                }
             }
             else if (CustomerChoice == 3)
             {
@@ -70,16 +81,31 @@ public class CustomerMenu
                     changePhone,
                     changeAddress);
 
-                customerRepository.UpdateCustomer(connection, customer);
+                bool updated = customerRepository.UpdateCustomer(connection, customer);
+                if (updated)
+                {
+                    Console.WriteLine("Kunden har uppdaterats!");
+                }
+                else
+                {
+                    Console.WriteLine("Kunden hittades inte!");
+                }
             }
             else if (CustomerChoice == 4)
             {
                 Console.WriteLine("Vilken kund vill du ta bort? Ange ID:");
                 int removeCustomerId = Convert.ToInt32(Console.ReadLine());
 
-                customerRepository.DeleteCustomer(
-                    connection,
-                    removeCustomerId);
+                bool deleted = customerRepository.DeleteCustomer(connection, removeCustomerId);
+                if (deleted)
+                {
+                    Console.WriteLine("Kunden har tagits bort!");
+                }
+                else
+                {
+                    Console.WriteLine("Kunden hittades inte!");
+                }
+
             }
             else if (CustomerChoice == 5)
             {
