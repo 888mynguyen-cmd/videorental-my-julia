@@ -3,20 +3,22 @@ public class ReturnService
 {
     private const decimal LateFeePerDays = 10;
 
-    public static void ReturnMovie(MySqlConnection connection, int physicalCopyId)
+    public static decimal ReturnMovie(MySqlConnection connection, int physicalCopyId)
     {
         using var transaction = connection.BeginTransaction();
 
         try
         {
             const string sql = """
-                SELECT ri.RentId, ri.ReturnDate
-                FROM RentItem ri
-                JOIN PhysicalCopy pc ON ri.PhysicalCopyId = pc.Id
-                JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
-                WHERE pc.Id = @physicalCopyId
-                  AND fs.Name = 'Rented'
-                  AND ri.ActualReturnDate IS NULL
+                SELECT RentItem.RentId, RentItem.ReturnDate
+                FROM RentItem
+                JOIN PhysicalCopy
+                ON RentItem.PhysicalCopyId = PhysicalCopy.Id
+                JOIN FilmStatus
+                ON PhysicalCopy.FilmStatusId = FilmStatus.Id
+                WHERE PhysicalCopy.Id = @physicalCopyId
+                AND FilmStatus.Name = 'Rented'
+                AND RentItem.ActualReturnDate IS NULL
                 FOR UPDATE
                 """;
 
@@ -94,12 +96,7 @@ public class ReturnService
             }
 
             transaction.Commit();
-            Console.WriteLine("Filmen har återlämnats!");
-
-            if (lateFee > 0)
-            {
-                Console.WriteLine($"Förseningsavgift: {lateFee} kr");
-            }
+            return lateFee;
         }
         catch
         {

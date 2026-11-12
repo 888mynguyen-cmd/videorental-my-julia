@@ -21,17 +21,21 @@ public class ReturnMenu
             {
                 try
                 {
-                    ReturnService.ReturnMovie(connection, physicalCopyId);
+                    decimal lateFee = ReturnService.ReturnMovie(connection, physicalCopyId);
+                    Console.WriteLine("Filmen har återlämnats!");
+                    if (lateFee > 0)
+                    {
+                        Console.WriteLine($"Förseningsavgift: {lateFee} kr");
+                    }
+
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(
-                        $"Kunde inte återlämna Film: {ex.Message}");
+                    Console.WriteLine($"Kunde inte återlämna Film: {ex.Message}");
                 }
             }
 
-            Console.Write(
-                "Vill du återlämna ytterligare en film? (j/n): ");
+            Console.Write("Vill du återlämna ytterligare en film? (j/n): ");
 
             string? answer = Console.ReadLine();
 
