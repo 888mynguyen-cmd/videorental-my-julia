@@ -148,15 +148,22 @@ public class Menu // Här har vi själva menyn
                             {
                                 // Ändra fysiska exemplaren
                                 Console.WriteLine("Ange Id för exemplaret du vill ändra status på:");
-                                int physicalId = Convert.ToInt32(Console.ReadLine() ?? "");
+                                if (!int.TryParse(Console.ReadLine(), out int physicalId))
+                                {
+                                    Console.WriteLine("Ogiltigt Id!");
+                                    continue;
+                                }
 
                                 Console.WriteLine("Ange Id för den nya statusen:");
-                                int filmStatus = Convert.ToInt32(Console.ReadLine() ?? "");
+                                if (!int.TryParse(Console.ReadLine(), out int filmStatus))
+                                {
+                                    Console.WriteLine("Ogiltigt Id!");
+                                    continue;
+                                }
 
                                 PhysicalCopyRepository.ChangePhysicalCopy(connection, physicalId, filmStatus);
-
-
                             }
+
                             else if (PhysicalChoice == 4)
                             {
                                 Console.WriteLine("Tillbaka till Filmer!");
