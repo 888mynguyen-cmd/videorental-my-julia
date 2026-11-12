@@ -22,7 +22,6 @@ public class Menu // Här har vi själva menyn
             if (Choice == 1)
             {
                 while (true)
-                while (true)
                 {
                     Console.WriteLine("---------Filmer--------");
                     Console.WriteLine("Välj nedan?");
