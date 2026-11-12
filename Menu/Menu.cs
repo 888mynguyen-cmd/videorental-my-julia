@@ -30,10 +30,12 @@ public class Menu // Här har vi själva menyn
                     Console.WriteLine("2. Lägg till film");
                     Console.WriteLine("3. Ändra film");
                     Console.WriteLine("4. Ta bort");
-                    Console.WriteLine("5. Gå tillbaka till huvudmenyn");
+                    Console.WriteLine("5. Hantera fysiska exempel");
+                    Console.WriteLine("6. Gå tillbaka till huvudmenyn");
 
                     Console.WriteLine("Välj alternativ: ");
                     int FilmChoice = Convert.ToInt32(Console.ReadLine());
+
 
                     if (FilmChoice == 1)
                     {
@@ -97,6 +99,81 @@ public class Menu // Här har vi själva menyn
                         Console.WriteLine("Filmen har tagits bort!");
                     }
                     else if (FilmChoice == 5)
+                    {
+                        while(true)
+                        {
+                            Console.WriteLine("---------Fysiska Exemplar--------");
+                            Console.WriteLine("Välj nedan?");
+
+                            Console.WriteLine("1. Visa alla exemplar");
+                            Console.WriteLine("2. Lägg till exemplar");
+                            Console.WriteLine("3. Ändra exemplarets status");
+                            Console.WriteLine("4. Tillbaka till Filmer");
+
+                            Console.WriteLine("Välj alternativ: ");
+                            int PhysicalChoice = Convert.ToInt32(Console.ReadLine());
+
+                            if (PhysicalChoice == 1)
+                            {
+                                List<PhysicalCopy> physicalCopies = PhysicalCopyRepository.ShowPhysicalCopy(connection);
+
+                                foreach (PhysicalCopy physicalCopy in physicalCopies)
+                                {
+                                    Console.WriteLine(
+                                        $"{physicalCopy.Id} | {physicalCopy.BarCode} | {physicalCopy.MovieId} | {physicalCopy.MovieTitle} | {physicalCopy.FilmStatusId} | {physicalCopy.StatusName}");
+                                }
+                            }
+
+                            else if (PhysicalChoice == 2)
+                            {
+                                // Lägg till fysiskt exemplay
+                                Console.WriteLine("Ange Id för filmen som exemplaret tillhör:");
+                                int movieId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                                Console.WriteLine("Ange streckkoden för det fysiska exemplaret:");
+                                string barCode = Console.ReadLine() ?? "";
+
+                                Console.WriteLine("Ange Id för statusen på en film som finns!");
+                                int filmStatusId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+
+                                PhysicalCopyRepository.AddPhysicalCopy(
+                                    connection,
+                                    barCode,
+                                    movieId,
+                                    filmStatusId);
+
+                            }
+
+                            else if (PhysicalChoice == 3)
+                            {
+                                // Ändra fysiska exemplaren
+                                Console.WriteLine("Ange Id för exemplaret du vill ändra status på:");
+                                if (!int.TryParse(Console.ReadLine(), out int physicalId))
+                                {
+                                    Console.WriteLine("Ogiltigt Id!");
+                                    continue;
+                                }
+
+                                Console.WriteLine("Ange Id för den nya statusen:");
+                                if (!int.TryParse(Console.ReadLine(), out int filmStatus))
+                                {
+                                    Console.WriteLine("Ogiltigt Id!");
+                                    continue;
+                                }
+
+                                PhysicalCopyRepository.ChangePhysicalCopy(connection, physicalId, filmStatus);
+                            }
+
+                            else if (PhysicalChoice == 4)
+                            {
+                                Console.WriteLine("Tillbaka till Filmer!");
+                                break;
+                            }
+                        }
+                    }
+
+                    else if (FilmChoice == 6) 
                     {
                         Console.WriteLine("Tillbaka till Huvudmenyn!");
                         break;

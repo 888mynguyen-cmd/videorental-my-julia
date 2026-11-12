@@ -33,7 +33,11 @@ public class MovieRepository
     // Lägg till
     public static void AddMovie(MySqlConnection connection, string title, string description, int rentalPriceId )
     {   
-        using MySqlCommand command = new MySqlCommand($"INSERT INTO Movie (Title, Description, RentalPriceId )                         VALUES ('{title}', '{description}', '{rentalPriceId }')", connection);
+        using MySqlCommand command = new MySqlCommand("INSERT INTO Movie (Title, Description, RentalPriceId)                         VALUES (@title, @description,  @rentalPriceId)", connection);
+
+        command.Parameters.AddWithValue("@title", title);
+        command.Parameters.AddWithValue("@description", description);
+        command.Parameters.AddWithValue("@rentalPriceId", rentalPriceId);
 
         command.ExecuteNonQuery();
     }
@@ -41,9 +45,16 @@ public class MovieRepository
     public static void ChangeMovie(MySqlConnection connection, int changeId, string changeTitle, string changeDescription, int changeRentalPriceId)
     {
 
-        using MySqlCommand command = new MySqlCommand($"""
-        UPDATE Movie Set Title = '{changeTitle}', Description = '{changeDescription}', RentalPriceId = {changeRentalPriceId} WHERE Id = {changeId}
+        using MySqlCommand command = new MySqlCommand("""
+        UPDATE Movie 
+        Set Title = @changeTitle, Description = @changeDescription, RentalPriceId = @changeRentalPriceId
+        WHERE Id = @changeId
         """, connection);
+
+        command.Parameters.AddWithValue("@changeId", changeId);
+        command.Parameters.AddWithValue("@changeTitle", changeTitle);
+        command.Parameters.AddWithValue("@changeDescription", changeDescription);
+        command.Parameters.AddWithValue("@changeRentalPriceId", changeRentalPriceId);
 
         command.ExecuteNonQuery();
     }
@@ -51,9 +62,12 @@ public class MovieRepository
 
     public static void RemoveMovie(MySqlConnection connection, int removeMovieId)
     {
-        using MySqlCommand command = new MySqlCommand($"""
-        DELETE FROM Movie WHERE Id = {removeMovieId} 
+        using MySqlCommand command = new MySqlCommand("""
+        DELETE FROM Movie
+        WHERE Id = @removeMovieId
         """, connection);
+
+        command.Parameters.AddWithValue("@removeMovieId", removeMovieId);
 
         command.ExecuteNonQuery();
     }
