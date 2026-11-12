@@ -1,5 +1,5 @@
 using MySqlConnector;
-public class RentMovie
+public class RentMenu
 {
     public static void ShowRentMenu(MySqlConnection connection)
     {
