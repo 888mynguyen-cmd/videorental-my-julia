@@ -146,7 +146,16 @@ public class Menu // Här har vi själva menyn
 
                             else if (PhysicalChoice == 3)
                             {
-                                
+                                // Ändra fysiska exemplaren
+                                Console.WriteLine("Ange Id för exemplaret du vill ändra status på:");
+                                int physicalId = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                                Console.WriteLine("Ange Id för den nya statusen:");
+                                int filmStatus = Convert.ToInt32(Console.ReadLine() ?? "");
+
+                                PhysicalCopyRepository.ChangePhysicalCopy(connection, physicalId, filmStatus);
+
+
                             }
                             else if (PhysicalChoice == 4)
                             {

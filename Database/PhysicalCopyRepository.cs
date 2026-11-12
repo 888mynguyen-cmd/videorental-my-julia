@@ -43,5 +43,18 @@ public class PhysicalCopyRepository
         command.ExecuteNonQuery();
     }
     
+    public static void ChangePhysicalCopy(MySqlConnection connection, int id, int filmStatusId)
+    {
+        using MySqlCommand command = new MySqlCommand("""
+        UPDATE PhysicalCopy
+        SET filmStatusId = @FilmStatusId
+        WHERE Id = @Id
+        """, connection);
+
+        command.Parameters.AddWithValue("@Id", id);
+        command.Parameters.AddWithValue("@FilmStatusId",filmStatusId);
+
+        command.ExecuteNonQuery();
+    }
     
 }
