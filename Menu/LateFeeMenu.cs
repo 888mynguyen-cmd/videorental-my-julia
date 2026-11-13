@@ -20,6 +20,7 @@ public class LateFeeMenu
             foreach (var rental in lateRentals)
             {
                 Console.WriteLine($"Kund: {rental.CustomerName}");
+                Console.WriteLine($"Telefonnummer: {rental.CustomerPhone}");
                 Console.WriteLine($"Film: {rental.MovieTitle}");
                 Console.WriteLine($"Filmexemplar-ID: {rental.PhysicalCopyId}");
                 Console.WriteLine($"Skulle återlämnas: {rental.ReturnDate:yyyy-MM-dd}");

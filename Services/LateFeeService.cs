@@ -4,6 +4,7 @@ using MySqlConnector;
 public class LateRental
 {
     public string CustomerName { get; set; } = "";
+    public string CustomerPhone { get; set; } = "";
     public string MovieTitle { get; set; } = "";
     public int PhysicalCopyId { get; set; }
     public DateTime ReturnDate { get; set; }
@@ -20,6 +21,7 @@ public class LateFeeService
         const string sql = """
             SELECT
                 c.Name,
+                c.Phonenumber,
                 m.Title,
                 pc.Id,
                 ri.ReturnDate,
@@ -41,16 +43,17 @@ public class LateFeeService
 
         while (reader.Read())
         {
-            DateTime returnDate = reader.GetDateTime(3);
-            decimal rentalPrice = reader.GetDecimal(4);
+            DateTime returnDate = reader.GetDateTime(4);
+            decimal rentalPrice = reader.GetDecimal(5);
 
             int lateDays = (DateTime.Today - returnDate.Date).Days;
 
             lateRentals.Add(new LateRental
             {
                 CustomerName = reader.GetString(0),
-                MovieTitle = reader.GetString(1),
-                PhysicalCopyId = reader.GetInt32(2),
+                CustomerPhone = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                MovieTitle = reader.GetString(2),
+                PhysicalCopyId = reader.GetInt32(3),
                 ReturnDate = returnDate,
                 LateDays = lateDays,
                 LateFee = lateDays * rentalPrice

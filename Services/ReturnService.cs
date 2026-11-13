@@ -3,7 +3,9 @@ using MySqlConnector;
 
 public class ReturnService
 {
-    public static ReturnReceipt ReturnMovie(MySqlConnection connection, int physicalCopyId)
+    public static ReturnReceipt ReturnMovie(
+        MySqlConnection connection,
+        int physicalCopyId)
     {
         using var transaction = connection.BeginTransaction();
 
@@ -42,9 +44,7 @@ public class ReturnService
                 using var reader = command.ExecuteReader();
 
                 if (!reader.Read())
-                {
                     throw new Exception("Filmen är inte uthyrd eller finns inte.");
-                }
 
                 rentId = reader.GetInt32(0);
                 returnDate = reader.GetDateTime(1);
@@ -53,14 +53,44 @@ public class ReturnService
                 rentalPrice = reader.GetDecimal(4);
             }
 
-            int lateDays = Math.Max(0, (actualReturnDate.Date - returnDate.Date).Days);
+            int lateDays = Math.Max(
+                0,
+                (actualReturnDate.Date - returnDate.Date).Days
+            );
 
             decimal lateFee = lateDays * rentalPrice;
+
+            bool lateFeePaid = false;
+            bool invoice = false;
+
+            if (lateFee > 0)
+            {
+                Console.WriteLine($"Förseningsavgift: {lateFee} kr");
+                Console.WriteLine("1. Kunden betalar direkt");
+                Console.WriteLine("2. Skicka faktura");
+
+                string? choice;
+
+                do
+                {
+                    Console.Write("Välj alternativ (1/2): ");
+                    choice = Console.ReadLine();
+
+                    if (choice != "1" && choice != "2")
+                        Console.WriteLine("Ogiltigt val.");
+
+                } while (choice != "1" && choice != "2");
+
+                lateFeePaid = choice == "1";
+                invoice = choice == "2";
+            }
 
             const string updateRentItemSql = """
                 UPDATE RentItem
                 SET ActualReturnDate = @actualReturnDate,
-                    LateFee = @lateFee
+                    LateFee = @lateFee,
+                    LateFeePaid = @lateFeePaid,
+                    Invoice = @invoice
                 WHERE RentId = @rentId
                   AND PhysicalCopyId = @physicalCopyId
                   AND ActualReturnDate IS NULL
@@ -70,8 +100,11 @@ public class ReturnService
             {
                 command.Parameters.AddWithValue("@actualReturnDate", actualReturnDate);
                 command.Parameters.AddWithValue("@lateFee", lateFee);
+                command.Parameters.AddWithValue("@lateFeePaid", lateFeePaid);
+                command.Parameters.AddWithValue("@invoice", invoice);
                 command.Parameters.AddWithValue("@rentId", rentId);
                 command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
+
                 command.ExecuteNonQuery();
             }
 
@@ -88,9 +121,7 @@ public class ReturnService
                 object? result = command.ExecuteScalar();
 
                 if (result == null)
-                {
-                    throw new Exception("Statusen Available saknas");
-                }
+                    throw new Exception("Statusen Available saknas.");
 
                 availableStatusId = Convert.ToInt32(result);
             }
@@ -105,6 +136,7 @@ public class ReturnService
             {
                 command.Parameters.AddWithValue("@statusId", availableStatusId);
                 command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
+
                 command.ExecuteNonQuery();
             }
 
