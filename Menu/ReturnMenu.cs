@@ -21,18 +21,30 @@ public class ReturnMenu
             {
                 try
                 {
-                    ReturnReceipt receipt = ReturnService.ReturnMovie(connection, physicalCopyId);
+                    ReturnReceipt receipt = ReturnService.ReturnMovie(
+                        connection,
+                        physicalCopyId
+                    );
 
                     Console.WriteLine();
-                    Console.WriteLine("========== ÅTERLÄMNINGSKVITTO ==========");
-                    Console.WriteLine($"Kund: {receipt.CustomerName}");
-                    Console.WriteLine($"Film: {receipt.MovieTitle}");
-                    Console.WriteLine($"Filmexemplar-ID: {receipt.PhysicalCopyId}");
-                    Console.WriteLine($"Skulle återlämnas: {receipt.ReturnDate:yyyy-MM-dd}");
-                    Console.WriteLine($"Återlämnad: {receipt.ActualReturnDate:yyyy-MM-dd}");
-                    Console.WriteLine($"Förseningsavgift: {receipt.LateFee} kr");
                     Console.WriteLine("Filmen har återlämnats!");
-                    Console.WriteLine("========================================");
+
+                    Console.Write("Vill kunden ha ett återlämningskvitto? (j/n): ");
+                    string? receiptAnswer = Console.ReadLine();
+
+                    if (receiptAnswer?.Trim().ToLower() == "j")
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("========== ÅTERLÄMNINGSKVITTO ==========");
+                        Console.WriteLine($"Kund: {receipt.CustomerName}");
+                        Console.WriteLine($"Film: {receipt.MovieTitle}");
+                        Console.WriteLine($"Filmexemplar-ID: {receipt.PhysicalCopyId}");
+                        Console.WriteLine($"Skulle återlämnas: {receipt.ReturnDate:yyyy-MM-dd}");
+                        Console.WriteLine($"Återlämnad: {receipt.ActualReturnDate:yyyy-MM-dd}");
+                        Console.WriteLine($"Förseningsavgift: {receipt.LateFee} kr");
+                        Console.WriteLine("========================================");
+                    }
+
                     Console.WriteLine();
                 }
                 catch (Exception ex)
@@ -45,7 +57,7 @@ public class ReturnMenu
 
             string? answer = Console.ReadLine();
 
-            if (answer?.ToLower() != "j")
+            if (answer?.Trim().ToLower() != "j")
             {
                 continueReturning = false;
             }

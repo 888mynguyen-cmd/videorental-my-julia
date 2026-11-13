@@ -4,6 +4,7 @@ using MySqlConnector;
 public class LateRental
 {
     public string CustomerName { get; set; } = "";
+    public string CustomerPhone { get; set; } = "";
     public string MovieTitle { get; set; } = "";
     public int PhysicalCopyId { get; set; }
     public DateTime ReturnDate { get; set; }
@@ -13,8 +14,6 @@ public class LateRental
 
 public class LateFeeService
 {
-    private const decimal LateFeePerDay = 10;
-
     public static List<LateRental> GetLateRentals(MySqlConnection connection)
     {
         List<LateRental> lateRentals = new();
@@ -22,9 +21,11 @@ public class LateFeeService
         const string sql = """
             SELECT
                 c.Name,
+                c.Phonenumber,
                 m.Title,
                 pc.Id,
-                ri.ReturnDate
+                ri.ReturnDate,
+                ri.PriceAtTransaction
             FROM RentItem ri
             JOIN Rent r ON ri.RentId = r.Id
             JOIN Customer c ON r.CustomerId = c.Id
@@ -42,17 +43,20 @@ public class LateFeeService
 
         while (reader.Read())
         {
-            DateTime returnDate = reader.GetDateTime(3);
+            DateTime returnDate = reader.GetDateTime(4);
+            decimal rentalPrice = reader.GetDecimal(5);
+
             int lateDays = (DateTime.Today - returnDate.Date).Days;
 
             lateRentals.Add(new LateRental
             {
                 CustomerName = reader.GetString(0),
-                MovieTitle = reader.GetString(1),
-                PhysicalCopyId = reader.GetInt32(2),
+                CustomerPhone = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                MovieTitle = reader.GetString(2),
+                PhysicalCopyId = reader.GetInt32(3),
                 ReturnDate = returnDate,
                 LateDays = lateDays,
-                LateFee = lateDays * LateFeePerDay
+                LateFee = lateDays * rentalPrice
             });
         }
 
