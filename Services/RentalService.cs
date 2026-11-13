@@ -43,6 +43,17 @@ public class RentalService
         bool idChecked,
         DateTime returnDate)
     {
+        DateTime rentalDate = DateTime.Today;
+
+        if (returnDate.Date < rentalDate)
+            throw new Exception("Återlämningsdatum kan inte vara i det förflutna.");
+
+        // Minst ett dygn debiteras
+        int rentalDays = Math.Max(
+            1,
+            (returnDate.Date - rentalDate).Days
+        );
+
         using var transaction = connection.BeginTransaction();
 
         try
@@ -122,6 +133,9 @@ public class RentalService
                 rentedStatusId = rentedId.Value;
             }
 
+            // Beräkna total hyreskostnad
+            decimal totalPrice = price * rentalDays;
+
             // Skapa uthyrningen
             const string rentSql = """
                 INSERT INTO Rent (Date, Total, Paid, IdChecked, CustomerId)
@@ -133,7 +147,7 @@ public class RentalService
             using (var command = new MySqlCommand(rentSql, connection, transaction))
             {
                 command.Parameters.AddWithValue("@date", DateTime.Now);
-                command.Parameters.AddWithValue("@total", price);
+                command.Parameters.AddWithValue("@total", totalPrice);
                 command.Parameters.AddWithValue("@paid", false);
                 command.Parameters.AddWithValue("@idChecked", idChecked);
                 command.Parameters.AddWithValue("@customerId", customerId);
@@ -157,7 +171,7 @@ public class RentalService
                 command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
                 command.Parameters.AddWithValue("@rentId", rentId);
                 command.Parameters.AddWithValue("@price", price);
-                command.Parameters.AddWithValue("@returnDate", returnDate);
+                command.Parameters.AddWithValue("@returnDate", returnDate.Date);
 
                 command.ExecuteNonQuery();
             }

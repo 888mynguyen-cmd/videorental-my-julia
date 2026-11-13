@@ -3,8 +3,6 @@ using MySqlConnector;
 
 public class ReturnService
 {
-    private const decimal LateFeePerDays = 10;
-
     public static ReturnReceipt ReturnMovie(MySqlConnection connection, int physicalCopyId)
     {
         using var transaction = connection.BeginTransaction();
@@ -16,7 +14,8 @@ public class ReturnService
                     ri.RentId,
                     ri.ReturnDate,
                     c.Name,
-                    m.Title
+                    m.Title,
+                    ri.PriceAtTransaction
                 FROM RentItem ri
                 JOIN Rent r ON ri.RentId = r.Id
                 JOIN Customer c ON r.CustomerId = c.Id
@@ -33,6 +32,7 @@ public class ReturnService
             DateTime returnDate;
             string customerName;
             string movieTitle;
+            decimal rentalPrice;
             DateTime actualReturnDate = DateTime.Today;
 
             using (var command = new MySqlCommand(sql, connection, transaction))
@@ -50,10 +50,12 @@ public class ReturnService
                 returnDate = reader.GetDateTime(1);
                 customerName = reader.GetString(2);
                 movieTitle = reader.GetString(3);
+                rentalPrice = reader.GetDecimal(4);
             }
 
             int lateDays = Math.Max(0, (actualReturnDate.Date - returnDate.Date).Days);
-            decimal lateFee = lateDays * LateFeePerDays;
+
+            decimal lateFee = lateDays * rentalPrice;
 
             const string updateRentItemSql = """
                 UPDATE RentItem

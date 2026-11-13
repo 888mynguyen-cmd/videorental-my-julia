@@ -13,8 +13,6 @@ public class LateRental
 
 public class LateFeeService
 {
-    private const decimal LateFeePerDay = 10;
-
     public static List<LateRental> GetLateRentals(MySqlConnection connection)
     {
         List<LateRental> lateRentals = new();
@@ -24,7 +22,8 @@ public class LateFeeService
                 c.Name,
                 m.Title,
                 pc.Id,
-                ri.ReturnDate
+                ri.ReturnDate,
+                ri.PriceAtTransaction
             FROM RentItem ri
             JOIN Rent r ON ri.RentId = r.Id
             JOIN Customer c ON r.CustomerId = c.Id
@@ -43,6 +42,8 @@ public class LateFeeService
         while (reader.Read())
         {
             DateTime returnDate = reader.GetDateTime(3);
+            decimal rentalPrice = reader.GetDecimal(4);
+
             int lateDays = (DateTime.Today - returnDate.Date).Days;
 
             lateRentals.Add(new LateRental
@@ -52,7 +53,7 @@ public class LateFeeService
                 PhysicalCopyId = reader.GetInt32(2),
                 ReturnDate = returnDate,
                 LateDays = lateDays,
-                LateFee = lateDays * LateFeePerDay
+                LateFee = lateDays * rentalPrice
             });
         }
 
