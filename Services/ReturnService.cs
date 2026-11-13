@@ -1,29 +1,38 @@
+
 using MySqlConnector;
+
 public class ReturnService
 {
     private const decimal LateFeePerDays = 10;
 
-    public static decimal ReturnMovie(MySqlConnection connection, int physicalCopyId)
+    public static ReturnReceipt ReturnMovie(MySqlConnection connection, int physicalCopyId)
     {
         using var transaction = connection.BeginTransaction();
 
         try
         {
             const string sql = """
-                SELECT RentItem.RentId, RentItem.ReturnDate
-                FROM RentItem
-                JOIN PhysicalCopy
-                ON RentItem.PhysicalCopyId = PhysicalCopy.Id
-                JOIN FilmStatus
-                ON PhysicalCopy.FilmStatusId = FilmStatus.Id
-                WHERE PhysicalCopy.Id = @physicalCopyId
-                AND FilmStatus.Name = 'Rented'
-                AND RentItem.ActualReturnDate IS NULL
+                SELECT
+                    ri.RentId,
+                    ri.ReturnDate,
+                    c.Name,
+                    m.Title
+                FROM RentItem ri
+                JOIN Rent r ON ri.RentId = r.Id
+                JOIN Customer c ON r.CustomerId = c.Id
+                JOIN PhysicalCopy pc ON ri.PhysicalCopyId = pc.Id
+                JOIN Movie m ON pc.MovieId = m.Id
+                JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
+                WHERE pc.Id = @physicalCopyId
+                  AND fs.Name = 'Rented'
+                  AND ri.ActualReturnDate IS NULL
                 FOR UPDATE
                 """;
 
             int rentId;
             DateTime returnDate;
+            string customerName;
+            string movieTitle;
             DateTime actualReturnDate = DateTime.Today;
 
             using (var command = new MySqlCommand(sql, connection, transaction))
@@ -31,6 +40,7 @@ public class ReturnService
                 command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
 
                 using var reader = command.ExecuteReader();
+
                 if (!reader.Read())
                 {
                     throw new Exception("Filmen är inte uthyrd eller finns inte.");
@@ -38,10 +48,11 @@ public class ReturnService
 
                 rentId = reader.GetInt32(0);
                 returnDate = reader.GetDateTime(1);
+                customerName = reader.GetString(2);
+                movieTitle = reader.GetString(3);
             }
 
-            DateTime actualRentalDate = DateTime.Today;
-            int lateDays = Math.Max(0, (actualRentalDate.Date - returnDate.Date).Days);
+            int lateDays = Math.Max(0, (actualReturnDate.Date - returnDate.Date).Days);
             decimal lateFee = lateDays * LateFeePerDays;
 
             const string updateRentItemSql = """
@@ -59,7 +70,6 @@ public class ReturnService
                 command.Parameters.AddWithValue("@lateFee", lateFee);
                 command.Parameters.AddWithValue("@rentId", rentId);
                 command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
-
                 command.ExecuteNonQuery();
             }
 
@@ -74,6 +84,7 @@ public class ReturnService
             using (var command = new MySqlCommand(statusSql, connection, transaction))
             {
                 object? result = command.ExecuteScalar();
+
                 if (result == null)
                 {
                     throw new Exception("Statusen Available saknas");
@@ -96,7 +107,16 @@ public class ReturnService
             }
 
             transaction.Commit();
-            return lateFee;
+
+            return new ReturnReceipt
+            {
+                CustomerName = customerName,
+                MovieTitle = movieTitle,
+                PhysicalCopyId = physicalCopyId,
+                ReturnDate = returnDate,
+                ActualReturnDate = actualReturnDate,
+                LateFee = lateFee
+            };
         }
         catch
         {

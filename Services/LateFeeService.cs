@@ -1,12 +1,24 @@
 
 using MySqlConnector;
 
+public class LateRental
+{
+    public string CustomerName { get; set; } = "";
+    public string MovieTitle { get; set; } = "";
+    public int PhysicalCopyId { get; set; }
+    public DateTime ReturnDate { get; set; }
+    public int LateDays { get; set; }
+    public decimal LateFee { get; set; }
+}
+
 public class LateFeeService
 {
     private const decimal LateFeePerDay = 10;
 
-    public static void ShowLateRentals(MySqlConnection connection)
+    public static List<LateRental> GetLateRentals(MySqlConnection connection)
     {
+        List<LateRental> lateRentals = new();
+
         const string sql = """
             SELECT
                 c.Name,
@@ -28,34 +40,22 @@ public class LateFeeService
 
         using var reader = command.ExecuteReader();
 
-        Console.WriteLine("------- Försenade filmer -------");
-
-        bool found = false;
-
         while (reader.Read())
         {
-            found = true;
-
-            string customerName = reader.GetString(0);
-            string movieTitle = reader.GetString(1);
-            int physicalCopyId = reader.GetInt32(2);
             DateTime returnDate = reader.GetDateTime(3);
-
             int lateDays = (DateTime.Today - returnDate.Date).Days;
-            decimal lateFee = lateDays * LateFeePerDay;
 
-            Console.WriteLine($"Kund: {customerName}");
-            Console.WriteLine($"Film: {movieTitle}");
-            Console.WriteLine($"Filmexemplar-ID: {physicalCopyId}");
-            Console.WriteLine($"Skulle återlämnas: {returnDate:yyyy-MM-dd}");
-            Console.WriteLine($"Försenad: {lateDays} dagar");
-            Console.WriteLine($"Förseningsavgift hittills: {lateFee} kr");
-            Console.WriteLine("------------------------------");
+            lateRentals.Add(new LateRental
+            {
+                CustomerName = reader.GetString(0),
+                MovieTitle = reader.GetString(1),
+                PhysicalCopyId = reader.GetInt32(2),
+                ReturnDate = returnDate,
+                LateDays = lateDays,
+                LateFee = lateDays * LateFeePerDay
+            });
         }
 
-        if (!found)
-        {
-            Console.WriteLine("Inga försenade filmer hittades.");
-        }
+        return lateRentals;
     }
 }

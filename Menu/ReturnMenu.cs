@@ -1,10 +1,10 @@
+
 using MySqlConnector;
 
 public class ReturnMenu
 {
     public static void ShowReturnMenu(MySqlConnection connection)
-    {   
-        // Återlämning
+    {
         Console.WriteLine("------- Återlämning ------");
 
         bool continueReturning = true;
@@ -21,17 +21,23 @@ public class ReturnMenu
             {
                 try
                 {
-                    decimal lateFee = ReturnService.ReturnMovie(connection, physicalCopyId);
-                    Console.WriteLine("Filmen har återlämnats!");
-                    if (lateFee > 0)
-                    {
-                        Console.WriteLine($"Förseningsavgift: {lateFee} kr");
-                    }
+                    ReturnReceipt receipt = ReturnService.ReturnMovie(connection, physicalCopyId);
 
+                    Console.WriteLine();
+                    Console.WriteLine("========== ÅTERLÄMNINGSKVITTO ==========");
+                    Console.WriteLine($"Kund: {receipt.CustomerName}");
+                    Console.WriteLine($"Film: {receipt.MovieTitle}");
+                    Console.WriteLine($"Filmexemplar-ID: {receipt.PhysicalCopyId}");
+                    Console.WriteLine($"Skulle återlämnas: {receipt.ReturnDate:yyyy-MM-dd}");
+                    Console.WriteLine($"Återlämnad: {receipt.ActualReturnDate:yyyy-MM-dd}");
+                    Console.WriteLine($"Förseningsavgift: {receipt.LateFee} kr");
+                    Console.WriteLine("Filmen har återlämnats!");
+                    Console.WriteLine("========================================");
+                    Console.WriteLine();
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Kunde inte återlämna Film: {ex.Message}");
+                    Console.WriteLine($"Kunde inte återlämna film: {ex.Message}");
                 }
             }
 
@@ -44,6 +50,5 @@ public class ReturnMenu
                 continueReturning = false;
             }
         }
-        
     }
 }
