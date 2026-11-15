@@ -3,9 +3,47 @@ using MySqlConnector;
 
 public class ReturnService
 {
-    public static ReturnReceipt ReturnMovie(
+    public static decimal GetLateFee(
         MySqlConnection connection,
         int physicalCopyId)
+    {
+        const string sql = """
+            SELECT
+                ri.ReturnDate,
+                ri.PriceAtTransaction
+            FROM RentItem ri
+            JOIN Rent r ON ri.RentId = r.Id
+            JOIN PhysicalCopy pc ON ri.PhysicalCopyId = pc.Id
+            JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
+            WHERE pc.Id = @physicalCopyId
+              AND fs.Name = 'Rented'
+              AND ri.ActualReturnDate IS NULL
+            """;
+
+        using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
+
+        using var reader = command.ExecuteReader();
+
+        if (!reader.Read())
+            throw new Exception("Filmen är inte uthyrd eller finns inte.");
+
+        DateTime returnDate = reader.GetDateTime(0);
+        decimal rentalPrice = reader.GetDecimal(1);
+
+        int lateDays = Math.Max(
+            0,
+            (DateTime.Today - returnDate.Date).Days
+        );
+
+        return lateDays * rentalPrice;
+    }
+
+    public static ReturnReceipt ReturnMovie(
+        MySqlConnection connection,
+        int physicalCopyId,
+        bool lateFeePaid = false,
+        bool invoice = false)
     {
         using var transaction = connection.BeginTransaction();
 
@@ -60,29 +98,17 @@ public class ReturnService
 
             decimal lateFee = lateDays * rentalPrice;
 
-            bool lateFeePaid = false;
-            bool invoice = false;
-
-            if (lateFee > 0)
+            if (lateFee > 0 && lateFeePaid == invoice)
             {
-                Console.WriteLine($"Förseningsavgift: {lateFee} kr");
-                Console.WriteLine("1. Kunden betalar direkt");
-                Console.WriteLine("2. Skicka faktura");
+                throw new Exception(
+                    "Välj antingen direktbetalning eller faktura."
+                );
+            }
 
-                string? choice;
-
-                do
-                {
-                    Console.Write("Välj alternativ (1/2): ");
-                    choice = Console.ReadLine();
-
-                    if (choice != "1" && choice != "2")
-                        Console.WriteLine("Ogiltigt val.");
-
-                } while (choice != "1" && choice != "2");
-
-                lateFeePaid = choice == "1";
-                invoice = choice == "2";
+            if (lateFee == 0)
+            {
+                lateFeePaid = false;
+                invoice = false;
             }
 
             const string updateRentItemSql = """
@@ -96,7 +122,8 @@ public class ReturnService
                   AND ActualReturnDate IS NULL
                 """;
 
-            using (var command = new MySqlCommand(updateRentItemSql, connection, transaction))
+            using (var command = new MySqlCommand(
+                updateRentItemSql, connection, transaction))
             {
                 command.Parameters.AddWithValue("@actualReturnDate", actualReturnDate);
                 command.Parameters.AddWithValue("@lateFee", lateFee);
@@ -116,7 +143,8 @@ public class ReturnService
 
             int availableStatusId;
 
-            using (var command = new MySqlCommand(statusSql, connection, transaction))
+            using (var command = new MySqlCommand(
+                statusSql, connection, transaction))
             {
                 object? result = command.ExecuteScalar();
 
@@ -132,7 +160,8 @@ public class ReturnService
                 WHERE Id = @physicalCopyId
                 """;
 
-            using (var command = new MySqlCommand(updateCopySql, connection, transaction))
+            using (var command = new MySqlCommand(
+                updateCopySql, connection, transaction))
             {
                 command.Parameters.AddWithValue("@statusId", availableStatusId);
                 command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
