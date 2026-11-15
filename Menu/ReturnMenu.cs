@@ -21,9 +21,43 @@ public class ReturnMenu
             {
                 try
                 {
-                    ReturnReceipt receipt = ReturnService.ReturnMovie(
+                    decimal lateFee = ReturnService.GetLateFee(
                         connection,
                         physicalCopyId
+                    );
+
+                    bool lateFeePaid = false;
+                    bool invoice = false;
+
+                    if (lateFee > 0)
+                    {
+                        Console.WriteLine($"Förseningsavgift: {lateFee} kr");
+                        Console.WriteLine("1. Kunden betalar direkt");
+                        Console.WriteLine("2. Skicka faktura");
+
+                        string? choice;
+
+                        do
+                        {
+                            Console.Write("Välj alternativ (1/2): ");
+                            choice = Console.ReadLine();
+
+                            if (choice != "1" && choice != "2")
+                            {
+                                Console.WriteLine("Ogiltigt val.");
+                            }
+
+                        } while (choice != "1" && choice != "2");
+
+                        lateFeePaid = choice == "1";
+                        invoice = choice == "2";
+                    }
+
+                    ReturnReceipt receipt = ReturnService.ReturnMovie(
+                        connection,
+                        physicalCopyId,
+                        lateFeePaid,
+                        invoice
                     );
 
                     Console.WriteLine();
@@ -54,7 +88,6 @@ public class ReturnMenu
             }
 
             Console.Write("Vill du återlämna ytterligare en film? (j/n): ");
-
             string? answer = Console.ReadLine();
 
             if (answer?.Trim().ToLower() != "j")
