@@ -34,7 +34,7 @@ public class CustomerRepository
 
     public List<Customer> GetAllCustomers(MySqlConnection connection)
     {
-       List<Customer> customers = new List<Customer>();
+        List<Customer> customers = new List<Customer>();
 
         string sql = """
             SELECT Id, Name, PhoneNumber, Address
@@ -49,16 +49,16 @@ public class CustomerRepository
             Customer customer = new Customer(
                 reader.GetInt32("Id"),
                 reader.GetString("Name"),
-                reader.GetString ("PhoneNumber"),
+                reader.GetString("PhoneNumber"),
                 reader.GetString("Address")
             );
             customers.Add(customer);
         }
         return customers;
     }
-    public bool UpdateCustomer(MySqlConnection connection,Customer customer)
+    public bool UpdateCustomer(MySqlConnection connection, Customer customer)
     {
-       
+
         string sql = """
             UPDATE Customer
             SET Name = @Name,
@@ -90,3 +90,5 @@ public class CustomerRepository
         return rows > 0;
     }
 }
+
+// Hej Linus här
