@@ -19,19 +19,32 @@ public class CustomerRepository
 
     public bool AddCustomer(MySqlConnection connection, Customer customer)
     {
+        using MySqlTransaction transaction =connection.BeginTransaction();
+        
+
+        try
+        {
         string sql = """
             INSERT INTO Customer (Name, PhoneNumber, Address)
             VALUES (@Name, @PhoneNumber, @Address)
             """;
 
-        using MySqlCommand command = new MySqlCommand(sql, connection);
+        using MySqlCommand command = new MySqlCommand(sql, connection, transaction);
         command.Parameters.AddWithValue("@Name", customer.Name);
         command.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
         command.Parameters.AddWithValue("@Address", customer.Address);
 
-        return command.ExecuteNonQuery() > 0;
-    }
 
+        int rows = command.ExecuteNonQuery();
+        transaction.Commit();
+        return rows > 0;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
     public List<Customer> GetAllCustomers(MySqlConnection connection)
     {
         List<Customer> customers = new List<Customer>();
@@ -58,7 +71,10 @@ public class CustomerRepository
     }
     public bool UpdateCustomer(MySqlConnection connection, Customer customer)
     {
+        using MySqlTransaction transaction = connection.BeginTransaction();
 
+        try
+        {
         string sql = """
             UPDATE Customer
             SET Name = @Name,
@@ -67,28 +83,44 @@ public class CustomerRepository
             WHERE Id = @Id
             """;
 
-        using MySqlCommand command = new MySqlCommand(sql, connection);
+        using MySqlCommand command = new MySqlCommand(sql, connection, transaction);
         command.Parameters.AddWithValue("@Id", customer.Id);
         command.Parameters.AddWithValue("@Name", customer.Name);
         command.Parameters.AddWithValue("@PhoneNumber", customer.PhoneNumber);
         command.Parameters.AddWithValue("@Address", customer.Address);
 
         int rows = command.ExecuteNonQuery();
+        transaction.Commit();
         return rows > 0;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        
+        }
     }
-
     public bool DeleteCustomer(MySqlConnection connection, int id)
     {
+        using MySqlTransaction transaction = connection.BeginTransaction();
+        try
+        {
         string sql = """
             DELETE FROM Customer WHERE Id = @Id
             """;
 
-        using MySqlCommand command = new MySqlCommand(sql, connection);
+        using MySqlCommand command = new MySqlCommand(sql, connection, transaction);
         command.Parameters.AddWithValue("@Id", id);
 
         int rows = command.ExecuteNonQuery();
+        transaction.Commit();
         return rows > 0;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 }
 
-// Hej Linus här

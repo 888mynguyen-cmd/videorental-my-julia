@@ -23,6 +23,7 @@ public class Program
             """;
 
             using MySqlConnection connection = new MySqlConnection(connectionString);
+            
             connection.Open();
 
             Menu.ShowMenu(connection);
