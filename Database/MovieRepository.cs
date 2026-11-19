@@ -33,7 +33,7 @@ public class MovieRepository
     // Lägg till
     public static void AddMovie(MySqlConnection connection, string title, string description, int rentalPriceId )
     {   
-        using MySqlCommand command = new MySqlCommand("INSERT INTO Movie (Title, Description, RentalPriceId)                         VALUES (@title, @description,  @rentalPriceId)", connection);
+        using MySqlCommand command = new MySqlCommand("INSERT INTO Movie (Title, Description, RentalPriceId) VALUES (@title, @description, @rentalPriceId)", connection);
 
         command.Parameters.AddWithValue("@title", title);
         command.Parameters.AddWithValue("@description", description);
