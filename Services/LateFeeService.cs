@@ -1,4 +1,3 @@
-
 using MySqlConnector;
 
 public class LateRental
@@ -14,6 +13,11 @@ public class LateRental
 
 public class LateFeeService
 {
+    public static decimal CalculateLateFee(int lateDays, decimal rentalPrice)
+    {
+        return lateDays * rentalPrice;
+    }
+
     public static List<LateRental> GetLateRentals(MySqlConnection connection)
     {
         List<LateRental> lateRentals = new();
@@ -56,7 +60,7 @@ public class LateFeeService
                 PhysicalCopyId = reader.GetInt32(3),
                 ReturnDate = returnDate,
                 LateDays = lateDays,
-                LateFee = lateDays * rentalPrice
+                LateFee = CalculateLateFee(lateDays, rentalPrice)
             });
         }
 
