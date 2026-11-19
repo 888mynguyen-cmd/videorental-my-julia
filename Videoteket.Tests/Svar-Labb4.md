@@ -1,0 +1,4 @@
+1. Identifierade du någon del av koden i Videoteket som direkt gick att testa? Vilken/vilka och varför?  Jag hittade en beräkning av förseningsavgiften. Jag behövde bara lägga den i en egen metod för att kunna testa den.
+2. Identifierade du någon del av koden i Videoteket som var svår eller omöjlig att testa? Vilken/vilka och varför?  Ja, LateFeeService var svår att testa eftersom den använder databasen direkt.
+3. Om du identifierade delar som var svåra eller omöjliga att testa, hur skulle du kunna ändra koden för att göra den mer testbar?  Jag kan dela upp koden i mindre delar och ha beräkningarna för sig. Då blir det lättare att testa.
+4. Ändrade du någon kod i Videoteket för att göra den testbar? I så fall, vad ändrade du och hur påverkade det testbarheten?  Ja, jag lade till en metod som heter CalculateLateFee. Sedan testade jag att tre dagars försening med 20 kr per dag blir 60 kr. Testet fungerade bra.
