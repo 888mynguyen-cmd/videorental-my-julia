@@ -6,7 +6,7 @@ public class PhysicalCopyRepository
     public static List<PhysicalCopy> ShowPhysicalCopy(MySqlConnection connection)
     {
         using MySqlCommand command = new MySqlCommand("""
-        SELECT PhysicalCopy.Id, PhysicalCopy.BarCode, PhysicalCopy.MovieId, Movie.Title, PhysicalCopy.FilmStatusId, FilmStatus.Name
+        SELECT PhysicalCopy.Id, PhysicalCopy.BarCode, PhysicalCopy.MovieId, Movie.Title, PhysicalCopy.FilmStatusId, FilmStatus.Status
         FROM PhysicalCopy                 
         JOIN Movie ON PhysicalCopy.MovieId = Movie.Id      
         JOIN FilmStatus ON PhysicalCopy.FilmStatusId = FilmStatus.Id;
@@ -23,7 +23,7 @@ public class PhysicalCopyRepository
             int MovieId = reader.GetInt32("MovieId");
             int FilmStatusId = reader.GetInt32("FilmStatusId");
             string MovieTitle = reader.GetString("Title");
-            string StatusName = reader.GetString("Name");
+            string StatusName = reader.GetString("Status");
 
             physicalCopies.Add(new PhysicalCopy(Id, BarCode, MovieId, FilmStatusId, MovieTitle, StatusName));
         }

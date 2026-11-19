@@ -18,7 +18,7 @@ public class RentalService
     public static bool IsCopyAvailable(MySqlConnection connection, int physicalCopyId)
     {
         const string sql = """
-            SELECT fs.Name
+            SELECT fs.Status
             FROM PhysicalCopy pc
             JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
             WHERE pc.Id = @physicalCopyId
@@ -102,9 +102,9 @@ public class RentalService
             int rentedStatusId;
 
             const string statusSql = """
-                SELECT Id, Name
+                SELECT Id, Status
                 FROM FilmStatus
-                WHERE Name IN ('Available', 'Rented')
+                WHERE Status IN ('Available', 'Rented')
                 """;
 
             using (var command = new MySqlCommand(statusSql, connection, transaction))

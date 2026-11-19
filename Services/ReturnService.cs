@@ -16,7 +16,7 @@ public class ReturnService
             JOIN PhysicalCopy pc ON ri.PhysicalCopyId = pc.Id
             JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
             WHERE pc.Id = @physicalCopyId
-              AND fs.Name = 'Rented'
+              AND fs.Status = 'Rented'
               AND ri.ActualReturnDate IS NULL
             """;
 
@@ -63,7 +63,7 @@ public class ReturnService
                 JOIN Movie m ON pc.MovieId = m.Id
                 JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
                 WHERE pc.Id = @physicalCopyId
-                  AND fs.Name = 'Rented'
+                  AND fs.Status = 'Rented'
                   AND ri.ActualReturnDate IS NULL
                 FOR UPDATE
                 """;
@@ -138,7 +138,7 @@ public class ReturnService
             const string statusSql = """
                 SELECT Id
                 FROM FilmStatus
-                WHERE Name = 'Available'
+                WHERE Status = 'Available'
                 """;
 
             int availableStatusId;
