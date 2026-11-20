@@ -1,22 +1,12 @@
-
 using MySqlConnector;
-
-public class LateRental
-{
-    public string CustomerName { get; set; } = "";
-    public string CustomerPhone { get; set; } = "";
-    public string MovieTitle { get; set; } = "";
-    public int PhysicalCopyId { get; set; }
-    public DateTime ReturnDate { get; set; }
-    public int LateDays { get; set; }
-    public decimal LateFee { get; set; }
-}
 
 public class LateFeeService
 {
     public static List<LateRental> GetLateRentals(MySqlConnection connection)
     {
-        List<LateRental> lateRentals = new();
+        // Använd om du vill hämta alla försenade filmer via vår stored procedure SelectAllLateMovie (finns i RentRepository)
+        // List<LateRental> lateRentals = RentRepository.GetLateReturn(connection);
+        List<LateRental> lateRentals = new(); 
 
         const string sql = """
             SELECT
