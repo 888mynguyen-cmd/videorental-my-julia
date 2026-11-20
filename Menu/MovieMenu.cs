@@ -29,7 +29,7 @@ public class MovieMenu
                         foreach (Movie movie in movies)
                         {
                             Console.WriteLine(
-                                $"{movie.Id} | {movie.Title} | {movie.Description} | PrisId: {movie.RentalPriceId}");
+                                $"{movie.Id} | {movie.Title} | {movie.Description} | {movie.Format} | PrisId: {movie.RentalPriceId}");
                         }
                     }
 
@@ -39,8 +39,11 @@ public class MovieMenu
                         Console.WriteLine("Lägg till en titel på film ");
                         string Title = Console.ReadLine() ?? "";
 
-                        Console.WriteLine("Lägg till en beskrivning på film ");
+                        Console.WriteLine("Lägg till en beskrivning på film");
                         string Description = Console.ReadLine() ?? "";
+
+                        Console.WriteLine("Lägg till ett format på film");
+                        string Format = Console.ReadLine() ?? "";
 
                         // 1 = Ny film, 2 = Gammal film
                         Console.WriteLine("Vilket id på priset till filmen?");
@@ -50,6 +53,7 @@ public class MovieMenu
                             connection,
                             Title,
                             Description,
+                            Format,
                             RentalPriceId);
                     }
 
@@ -65,6 +69,9 @@ public class MovieMenu
                         Console.WriteLine("Vad vill du ändra filmens beskrivning till?");
                         string changeDescription = Console.ReadLine() ?? "";
 
+                        Console.WriteLine("Vad vill du ändra filmens format till?");
+                        string changeFormat = Console.ReadLine() ?? "";
+
                         Console.WriteLine("Vad vill du ändra filmens Pris till?");
                         int changeRentalPriceId = Convert.ToInt32(Console.ReadLine() ?? "");
 
@@ -73,6 +80,7 @@ public class MovieMenu
                             changeId,
                             changeTitle,
                             changeDescription,
+                            changeFormat,
                             changeRentalPriceId);
                     }
                     else if (FilmChoice == 4)
@@ -103,12 +111,12 @@ public class MovieMenu
                                 {
                                     List<PhysicalCopy> physicalCopies = PhysicalCopyRepository.ShowPhysicalCopy(connection);
 
-                                    foreach (PhysicalCopy physicalCopy in physicalCopies)
-                                    {
-                                        Console.WriteLine(
-                                            $"{physicalCopy.Id} | {physicalCopy.BarCode} | {physicalCopy.MovieId} | {physicalCopy.MovieTitle} | {physicalCopy.FilmStatusId} | {physicalCopy.StatusName}");
-                                    }
-                                }
+                            foreach (PhysicalCopy physicalCopy in physicalCopies)
+                            {
+                                Console.WriteLine(
+                                    $"{physicalCopy.Id} | {physicalCopy.BarCode} | {physicalCopy.BuyOrRent} | {physicalCopy.MovieId} | {physicalCopy.MovieTitle} | {physicalCopy.FilmStatusId} | {physicalCopy.StatusName}");
+                            }
+                        }
 
                                 else if (PhysicalChoice == 2)
                                 {
@@ -116,18 +124,43 @@ public class MovieMenu
                                     Console.WriteLine("Ange Id för filmen som exemplaret tillhör:");
                                     int movieId = Convert.ToInt32(Console.ReadLine() ?? "");
 
-                                    Console.WriteLine("Ange streckkoden för det fysiska exemplaret:");
-                                    string barCode = Console.ReadLine() ?? "";
+                            Console.WriteLine("Ange streckkoden för det fysiska exemplaret:");
+                            string barCode = Console.ReadLine() ?? "";
+
+                            Console.WriteLine("1. Köp");
+                            Console.WriteLine("2. Uthyrning");
+
+                            bool buyOrRent;
+                            if (!int.TryParse(Console.ReadLine(), out int choice))
+                            {
+                                Console.WriteLine("Ogiltigt val!");
+                                continue;
+                            }
+
+                            if (choice == 1)
+                            {
+                                buyOrRent = true;
+                            }
+                            else if (choice == 2)
+                            {
+                                buyOrRent = false;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Ogiltigt val!");
+                                continue;
+                            }
 
                                     Console.WriteLine("Ange Id för statusen på en film som finns!");
                                     int filmStatusId = Convert.ToInt32(Console.ReadLine() ?? "");
 
 
-                                    PhysicalCopyRepository.AddPhysicalCopy(
-                                        connection,
-                                        barCode,
-                                        movieId,
-                                        filmStatusId);
+                            PhysicalCopyRepository.AddPhysicalCopy(
+                                connection,
+                                barCode,
+                                buyOrRent,
+                                movieId,
+                                filmStatusId);
 
                                 }
 
