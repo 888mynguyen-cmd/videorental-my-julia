@@ -6,7 +6,7 @@ public class PhysicalCopyRepository
     public static List<PhysicalCopy> ShowPhysicalCopy(MySqlConnection connection)
     {
         using MySqlCommand command = new MySqlCommand("""
-        SELECT PhysicalCopy.Id, PhysicalCopy.BarCode, PhysicalCopy.MovieId, Movie.Title, PhysicalCopy.FilmStatusId, FilmStatus.Status
+        SELECT PhysicalCopy.Id, PhysicalCopy.BarCode, PhysicalCopy.BuyOrRent, PhysicalCopy.MovieId, Movie.Title, PhysicalCopy.FilmStatusId, FilmStatus.Status
         FROM PhysicalCopy                 
         JOIN Movie ON PhysicalCopy.MovieId = Movie.Id      
         JOIN FilmStatus ON PhysicalCopy.FilmStatusId = FilmStatus.Id;
@@ -20,23 +20,25 @@ public class PhysicalCopyRepository
         {
             int Id = reader.GetInt32("Id");
             string BarCode = reader.GetString("BarCode");
+            bool BuyOrRent = reader.GetBoolean("BuyOrRent");
             int MovieId = reader.GetInt32("MovieId");
             int FilmStatusId = reader.GetInt32("FilmStatusId");
             string MovieTitle = reader.GetString("Title");
             string StatusName = reader.GetString("Status");
 
-            physicalCopies.Add(new PhysicalCopy(Id, BarCode, MovieId, FilmStatusId, MovieTitle, StatusName));
+            physicalCopies.Add(new PhysicalCopy(Id, BarCode, BuyOrRent, MovieId, FilmStatusId, MovieTitle, StatusName));
         }
         return physicalCopies;
     }
 
     // Lägg till PhysicalCopy
 
-    public static void AddPhysicalCopy(MySqlConnection connection, string barCode, int movieId, int filmStatusId)
+    public static void AddPhysicalCopy(MySqlConnection connection, string barCode, bool buyOrRent, int movieId, int filmStatusId)
     {
-        using MySqlCommand command = new MySqlCommand("INSERT INTO PhysicalCopy (BarCode, MovieId, FilmStatusId)                         VALUES (@barcode, @movieId, @filmStatusId);", connection);
+        using MySqlCommand command = new MySqlCommand("INSERT INTO PhysicalCopy (BarCode, BuyOrRent, MovieId, FilmStatusId) VALUES (@barcode, @buyOrRent, @movieId, @filmStatusId);", connection);
         
         command.Parameters.AddWithValue("@barcode", barCode);
+        command.Parameters.AddWithValue("@buyOrRent", buyOrRent);
         command.Parameters.AddWithValue("@movieId", movieId);
         command.Parameters.AddWithValue("@filmStatusId",filmStatusId);
 
