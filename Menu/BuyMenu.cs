@@ -17,13 +17,13 @@ public class BuyProdcutMenu
             if(buyChoice == 1)
             {
                 ProductMenu.ShowProduct(connection);
-                break;
+                continue;
             }
 
             else if (buyChoice == 2)
             {
                 ProductMenu.BuyProduct(connection);
-                break;
+                continue;
             }
 
             else
