@@ -23,8 +23,16 @@ public class RentMenu
         }
 
         Console.Write("Har kundens ID kontrollerats? (j/n): ");
+
         bool idChecked =
             Console.ReadLine()?.Trim().ToLower() == "j";
+
+        if (!idChecked)
+        {
+            Console.WriteLine(
+                "Uthyrningen avbröts. Kundens ID måste kontrolleras.");
+            return;
+        }
 
         int? cOrderId = null;
         bool continueRenting = true;
@@ -62,33 +70,68 @@ public class RentMenu
                 }
                 else
                 {
-                    Console.Write("Bekräfta uthyrningen? (j/n): ");
+                    decimal? specialPrice = null;
+                    bool validPrice = true;
 
-                    if (Console.ReadLine()?.Trim().ToLower() != "j")
+                    Console.Write(
+                        "Vill du ange ett specialpris? (j/n): ");
+
+                    if (Console.ReadLine()?.Trim().ToLower() == "j")
                     {
-                        Console.WriteLine("Uthyrningen avbröts.");
-                    }
-                    else
-                    {
-                        try
+                        Console.Write("Ange överenskommet totalpris (kr): ");
+
+                        string priceInput =
+                            Console.ReadLine()?.Trim() ?? "";
+
+                        priceInput = priceInput.Replace(',', '.');
+
+                        if (!decimal.TryParse(
+                            priceInput,
+                            NumberStyles.Number,
+                            CultureInfo.InvariantCulture,
+                            out decimal enteredPrice) ||
+                            enteredPrice < 0)
                         {
-                            int orderId = RentalService.RentMovie(
-                                connection,
-                                customerId,
-                                physicalCopyId,
-                                idChecked,
-                                returnDate,
-                                cOrderId);
-
-                            cOrderId = orderId;
-
-                            Console.WriteLine(
-                                $"Uthyrningen registrerades! Order-ID: {orderId}");
+                            Console.WriteLine("Ogiltigt specialpris.");
+                            validPrice = false;
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Console.WriteLine(
-                                $"Kunde inte hyra ut filmen: {ex.Message}");
+                            specialPrice = enteredPrice;
+                        }
+                    }
+
+                    if (validPrice)
+                    {
+                        Console.Write("Bekräfta uthyrningen? (j/n): ");
+
+                        if (Console.ReadLine()?.Trim().ToLower() != "j")
+                        {
+                            Console.WriteLine("Uthyrningen avbröts.");
+                        }
+                        else
+                        {
+                            try
+                            {
+                                int orderId = RentalService.RentMovie(
+                                    connection,
+                                    customerId,
+                                    physicalCopyId,
+                                    idChecked,
+                                    returnDate,
+                                    cOrderId,
+                                    specialPrice);
+
+                                cOrderId = orderId;
+
+                                Console.WriteLine(
+                                    $"Uthyrningen registrerades! Order-ID: {orderId}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(
+                                    $"Kunde inte hyra ut filmen: {ex.Message}");
+                            }
                         }
                     }
                 }
@@ -167,7 +210,7 @@ public class RentMenu
                     receipt.LoadOrderFromDatabase(
                         connection, cOrderId.Value);
 
-                    receipt.PrintReceipt();
+                    PrintReceipt(receipt);
                 }
                 catch (Exception ex)
                 {
@@ -176,5 +219,23 @@ public class RentMenu
                 }
             }
         }
+    }
+
+    private static void PrintReceipt(ReceiptService receipt)
+    {
+        Console.WriteLine();
+        Console.WriteLine("========== VIDEOTEKET ==========");
+        Console.WriteLine("             KVITTO");
+        Console.WriteLine("--------------------------------");
+
+        foreach (ReceiptItem item in receipt.Items)
+        {
+            Console.WriteLine(
+                $"{item.Name} | {item.Quantity} st x {item.UnitPrice:0.00} kr = {item.TotalPrice:0.00} kr");
+        }
+
+        Console.WriteLine("--------------------------------");
+        Console.WriteLine($"TOTALT: {receipt.GetTotal():0.00} kr");
+        Console.WriteLine("================================");
     }
 }

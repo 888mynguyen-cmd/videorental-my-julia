@@ -36,7 +36,6 @@ public class RentalService
     }
 
     // Skapa en ny order och hyr den första filmen.
-    // Returnerar orderns ID.
     public static int RentMovie(
         MySqlConnection connection,
         int customerId,
@@ -50,24 +49,34 @@ public class RentalService
             physicalCopyId,
             idChecked,
             returnDate,
+            null,
             null);
     }
 
     // Lägg till en film i en befintlig order,
     // eller skapa en ny order om cOrderId är null.
+    // specialPrice = null betyder automatiskt pris.
     public static int RentMovie(
         MySqlConnection connection,
         int customerId,
         int physicalCopyId,
         bool idChecked,
         DateTime returnDate,
-        int? cOrderId)
+        int? cOrderId,
+        decimal? specialPrice = null)
     {
         DateTime rentalDate = DateTime.Today;
 
         if (returnDate.Date < rentalDate)
             throw new Exception(
                 "Återlämningsdatum kan inte vara i det förflutna.");
+
+        if (specialPrice.HasValue &&
+            (specialPrice.Value < 0 ||
+             specialPrice.Value > 99999999.99m))
+        {
+            throw new Exception("Ogiltigt specialpris.");
+        }
 
         int rentalDays = Math.Max(
             1,
@@ -164,12 +173,10 @@ public class RentalService
             }
 
             // BuyOrRent = 1 betyder köp.
-            // Endast exemplar för uthyrning får hyras.
             if (buyOrRent)
                 throw new Exception(
                     "Filmexemplaret är till försäljning och kan inte hyras.");
 
-            int rentedStatusId;
             int? availableStatusId = null;
             int? rentedId = null;
 
@@ -214,9 +221,11 @@ public class RentalService
                 throw new Exception(
                     "Filmexemplaret är inte tillgängligt.");
 
-            rentedStatusId = rentedId.Value;
+            // Använd specialpris om det finns.
+            // Annars används automatiskt pris.
+            decimal rentalTotal =
+                specialPrice ?? (dailyPrice * rentalDays);
 
-            decimal rentalTotal = dailyPrice * rentalDays;
             int orderId;
 
             if (cOrderId.HasValue)
@@ -225,7 +234,6 @@ public class RentalService
             }
             else
             {
-                // Skapa ny beställning.
                 const string insertOrderSql = """
                     INSERT INTO COrder
                     (Date, Total, Paid, IdChecked, CustomerId)
@@ -248,7 +256,7 @@ public class RentalService
                 orderId = checked((int)command.LastInsertedId);
             }
 
-            // Registrera filmen i Rent.
+            // Registrera filmen med överenskommet pris.
             const string insertRentSql = """
                 INSERT INTO Rent
                 (PhysicalCopyId, COrderId, PriceAtTransaction,
@@ -306,7 +314,7 @@ public class RentalService
                 updateCopySql, connection, transaction))
             {
                 command.Parameters.AddWithValue(
-                    "@rentedStatusId", rentedStatusId);
+                    "@rentedStatusId", rentedId.Value);
                 command.Parameters.AddWithValue(
                     "@physicalCopyId", physicalCopyId);
 
