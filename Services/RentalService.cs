@@ -3,10 +3,11 @@ using MySqlConnector;
 
 public class RentalService
 {
-    // Kontrollera att kunden finns
-    public static bool CustomerExists(MySqlConnection connection, int customerId)
+    public static bool CustomerExists(
+        MySqlConnection connection, int customerId)
     {
-        const string sql = "SELECT COUNT(*) FROM Customer WHERE Id = @customerId";
+        const string sql =
+            "SELECT COUNT(*) FROM Customer WHERE Id = @customerId";
 
         using var command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@customerId", customerId);
@@ -14,28 +15,28 @@ public class RentalService
         return Convert.ToInt32(command.ExecuteScalar()) > 0;
     }
 
-    // Kontrollera om filmexemplaret är tillgängligt
-    public static bool IsCopyAvailable(MySqlConnection connection, int physicalCopyId)
+    public static bool IsCopyAvailable(
+        MySqlConnection connection, int physicalCopyId)
     {
         const string sql = """
             SELECT fs.Status
             FROM PhysicalCopy pc
             JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
             WHERE pc.Id = @physicalCopyId
+              AND pc.BuyOrRent = 0
             """;
 
         using var command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
 
-        object? result = command.ExecuteScalar();
-
         return string.Equals(
-            result?.ToString(),
+            command.ExecuteScalar()?.ToString(),
             "Available",
             StringComparison.OrdinalIgnoreCase);
     }
 
-    // Hyr ut ett filmexemplar
+    // Skapa en ny order och hyr den första filmen.
+    // Returnerar orderns ID.
     public static int RentMovie(
         MySqlConnection connection,
         int customerId,
@@ -43,22 +44,40 @@ public class RentalService
         bool idChecked,
         DateTime returnDate)
     {
+        return RentMovie(
+            connection,
+            customerId,
+            physicalCopyId,
+            idChecked,
+            returnDate,
+            null);
+    }
+
+    // Lägg till en film i en befintlig order,
+    // eller skapa en ny order om cOrderId är null.
+    public static int RentMovie(
+        MySqlConnection connection,
+        int customerId,
+        int physicalCopyId,
+        bool idChecked,
+        DateTime returnDate,
+        int? cOrderId)
+    {
         DateTime rentalDate = DateTime.Today;
 
         if (returnDate.Date < rentalDate)
-            throw new Exception("Återlämningsdatum kan inte vara i det förflutna.");
+            throw new Exception(
+                "Återlämningsdatum kan inte vara i det förflutna.");
 
-        // Minst ett dygn debiteras
         int rentalDays = Math.Max(
             1,
-            (returnDate.Date - rentalDate).Days
-        );
+            (returnDate.Date - rentalDate).Days);
 
         using var transaction = connection.BeginTransaction();
 
         try
         {
-            // Kontrollera kunden
+            // Kontrollera kunden.
             using (var command = new MySqlCommand(
                 "SELECT COUNT(*) FROM Customer WHERE Id = @customerId",
                 connection, transaction))
@@ -69,12 +88,49 @@ public class RentalService
                     throw new Exception("Kunden finns inte.");
             }
 
-            // Hämta och lås filmexemplaret
+            // Kontrollera befintlig order.
+            if (cOrderId.HasValue)
+            {
+                const string orderSql = """
+                    SELECT CustomerId, Paid
+                    FROM COrder
+                    WHERE Id = @cOrderId
+                    FOR UPDATE
+                    """;
+
+                using var command = new MySqlCommand(
+                    orderSql, connection, transaction);
+
+                command.Parameters.AddWithValue(
+                    "@cOrderId", cOrderId.Value);
+
+                using var reader = command.ExecuteReader();
+
+                if (!reader.Read())
+                    throw new Exception(
+                        "Beställningen finns inte.");
+
+                int orderCustomerId = reader.GetInt32("CustomerId");
+                bool isPaid = reader.GetBoolean("Paid");
+
+                if (orderCustomerId != customerId)
+                    throw new Exception(
+                        "Beställningen tillhör en annan kund.");
+
+                if (isPaid)
+                    throw new Exception(
+                        "Beställningen är redan betald.");
+            }
+
+            // Hämta filmexemplaret och priset.
             int statusId;
-            decimal price;
+            decimal dailyPrice;
+            bool buyOrRent;
 
             const string copySql = """
-                SELECT pc.FilmStatusId, rp.Price
+                SELECT pc.FilmStatusId,
+                       pc.BuyOrRent,
+                       rp.Price
                 FROM PhysicalCopy pc
                 JOIN Movie m ON pc.MovieId = m.Id
                 JOIN RentalPrice rp ON m.RentalPriceId = rp.Id
@@ -82,24 +138,40 @@ public class RentalService
                 FOR UPDATE
                 """;
 
-            using (var command = new MySqlCommand(copySql, connection, transaction))
+            using (var command = new MySqlCommand(
+                copySql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
+                command.Parameters.AddWithValue(
+                    "@physicalCopyId", physicalCopyId);
 
                 using var reader = command.ExecuteReader();
 
                 if (!reader.Read())
-                    throw new Exception("Filmexemplaret eller priset saknas.");
+                    throw new Exception(
+                        "Filmexemplaret eller priset saknas.");
 
-                if (reader.IsDBNull(0) || reader.IsDBNull(1))
-                    throw new Exception("Filmstatus eller pris saknas.");
+                if (reader.IsDBNull(0) ||
+                    reader.IsDBNull(1) ||
+                    reader.IsDBNull(2))
+                {
+                    throw new Exception(
+                        "Filmstatus eller pris saknas.");
+                }
 
                 statusId = reader.GetInt32(0);
-                price = reader.GetDecimal(1);
+                buyOrRent = reader.GetBoolean(1);
+                dailyPrice = reader.GetDecimal(2);
             }
 
-            // Kontrollera status
+            // BuyOrRent = 1 betyder köp.
+            // Endast exemplar för uthyrning får hyras.
+            if (buyOrRent)
+                throw new Exception(
+                    "Filmexemplaret är till försäljning och kan inte hyras.");
+
             int rentedStatusId;
+            int? availableStatusId = null;
+            int? rentedId = null;
 
             const string statusSql = """
                 SELECT Id, Status
@@ -107,93 +179,143 @@ public class RentalService
                 WHERE Status IN ('Available', 'Rented')
                 """;
 
-            using (var command = new MySqlCommand(statusSql, connection, transaction))
+            using (var command = new MySqlCommand(
+                statusSql, connection, transaction))
             using (var reader = command.ExecuteReader())
             {
-                int? availableId = null;
-                int? rentedId = null;
-
                 while (reader.Read())
                 {
-                    string name = reader.GetString(1);
+                    string status = reader.GetString(1);
 
-                    if (name.Equals("Available", StringComparison.OrdinalIgnoreCase))
-                        availableId = reader.GetInt32(0);
+                    if (status.Equals(
+                        "Available",
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        availableStatusId = reader.GetInt32(0);
+                    }
 
-                    if (name.Equals("Rented", StringComparison.OrdinalIgnoreCase))
+                    if (status.Equals(
+                        "Rented",
+                        StringComparison.OrdinalIgnoreCase))
+                    {
                         rentedId = reader.GetInt32(0);
+                    }
                 }
-
-                if (availableId == null || rentedId == null)
-                    throw new Exception("FilmStatus saknar Available eller Rented.");
-
-                if (statusId != availableId.Value)
-                    throw new Exception("Filmexemplaret är inte tillgängligt.");
-
-                rentedStatusId = rentedId.Value;
             }
 
-            // Beräkna total hyreskostnad
-            decimal totalPrice = price * rentalDays;
-
-            // Skapa uthyrningen
-            const string rentSql = """
-                INSERT INTO Rent (Date, Total, Paid, IdChecked, CustomerId)
-                VALUES (@date, @total, @paid, @idChecked, @customerId)
-                """;
-
-            long rentId;
-
-            using (var command = new MySqlCommand(rentSql, connection, transaction))
+            if (!availableStatusId.HasValue ||
+                !rentedId.HasValue)
             {
-                command.Parameters.AddWithValue("@date", DateTime.Now);
-                command.Parameters.AddWithValue("@total", totalPrice);
-                command.Parameters.AddWithValue("@paid", false);
-                command.Parameters.AddWithValue("@idChecked", idChecked);
-                command.Parameters.AddWithValue("@customerId", customerId);
+                throw new Exception(
+                    "FilmStatus saknar Available eller Rented.");
+            }
+
+            if (statusId != availableStatusId.Value)
+                throw new Exception(
+                    "Filmexemplaret är inte tillgängligt.");
+
+            rentedStatusId = rentedId.Value;
+
+            decimal rentalTotal = dailyPrice * rentalDays;
+            int orderId;
+
+            if (cOrderId.HasValue)
+            {
+                orderId = cOrderId.Value;
+            }
+            else
+            {
+                // Skapa ny beställning.
+                const string insertOrderSql = """
+                    INSERT INTO COrder
+                    (Date, Total, Paid, IdChecked, CustomerId)
+                    VALUES
+                    (@date, 0, false, @idChecked, @customerId)
+                    """;
+
+                using var command = new MySqlCommand(
+                    insertOrderSql, connection, transaction);
+
+                command.Parameters.AddWithValue(
+                    "@date", DateTime.Now);
+                command.Parameters.AddWithValue(
+                    "@idChecked", idChecked);
+                command.Parameters.AddWithValue(
+                    "@customerId", customerId);
 
                 command.ExecuteNonQuery();
-                rentId = command.LastInsertedId;
+
+                orderId = checked((int)command.LastInsertedId);
             }
 
-            // Koppla filmexemplaret till uthyrningen
-            const string itemSql = """
-                INSERT INTO RentItem
-                (PhysicalCopyId, RentId, PriceAtTransaction,
-                 ReturnDate, ActualReturnDate, LateFee, Invoice, LateFeePaid)
+            // Registrera filmen i Rent.
+            const string insertRentSql = """
+                INSERT INTO Rent
+                (PhysicalCopyId, COrderId, PriceAtTransaction,
+                 ReturnDate, ActualReturnDate, LateFee,
+                 Invoice, LateFeePaid)
                 VALUES
-                (@physicalCopyId, @rentId, @price,
+                (@physicalCopyId, @cOrderId, @price,
                  @returnDate, NULL, 0, false, false)
                 """;
 
-            using (var command = new MySqlCommand(itemSql, connection, transaction))
+            using (var command = new MySqlCommand(
+                insertRentSql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
-                command.Parameters.AddWithValue("@rentId", rentId);
-                command.Parameters.AddWithValue("@price", price);
-                command.Parameters.AddWithValue("@returnDate", returnDate.Date);
+                command.Parameters.AddWithValue(
+                    "@physicalCopyId", physicalCopyId);
+                command.Parameters.AddWithValue(
+                    "@cOrderId", orderId);
+                command.Parameters.AddWithValue(
+                    "@price", rentalTotal);
+                command.Parameters.AddWithValue(
+                    "@returnDate", returnDate.Date);
 
                 command.ExecuteNonQuery();
             }
 
-            // Ändra status till uthyrd
-            const string updateSql = """
+            // Uppdatera orderns totalbelopp.
+            const string updateOrderSql = """
+                UPDATE COrder
+                SET Total = Total + @rentalTotal,
+                    IdChecked = IdChecked OR @idChecked
+                WHERE Id = @cOrderId
+                """;
+
+            using (var command = new MySqlCommand(
+                updateOrderSql, connection, transaction))
+            {
+                command.Parameters.AddWithValue(
+                    "@rentalTotal", rentalTotal);
+                command.Parameters.AddWithValue(
+                    "@idChecked", idChecked);
+                command.Parameters.AddWithValue(
+                    "@cOrderId", orderId);
+
+                command.ExecuteNonQuery();
+            }
+
+            // Ändra filmens status till Rented.
+            const string updateCopySql = """
                 UPDATE PhysicalCopy
                 SET FilmStatusId = @rentedStatusId
                 WHERE Id = @physicalCopyId
                 """;
 
-            using (var command = new MySqlCommand(updateSql, connection, transaction))
+            using (var command = new MySqlCommand(
+                updateCopySql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@rentedStatusId", rentedStatusId);
-                command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
+                command.Parameters.AddWithValue(
+                    "@rentedStatusId", rentedStatusId);
+                command.Parameters.AddWithValue(
+                    "@physicalCopyId", physicalCopyId);
 
                 command.ExecuteNonQuery();
             }
 
             transaction.Commit();
 
-            return checked((int)rentId);
+            return orderId;
         }
         catch
         {

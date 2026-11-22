@@ -8,16 +8,17 @@ public class ReturnService
         int physicalCopyId)
     {
         const string sql = """
-            SELECT
-                ri.ReturnDate,
-                ri.PriceAtTransaction
-            FROM RentItem ri
-            JOIN Rent r ON ri.RentId = r.Id
-            JOIN PhysicalCopy pc ON ri.PhysicalCopyId = pc.Id
+            SELECT r.ReturnDate, rp.Price
+            FROM Rent r
+            JOIN PhysicalCopy pc ON r.PhysicalCopyId = pc.Id
+            JOIN Movie m ON pc.MovieId = m.Id
+            JOIN RentalPrice rp ON m.RentalPriceId = rp.Id
             JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
             WHERE pc.Id = @physicalCopyId
               AND fs.Status = 'Rented'
-              AND ri.ActualReturnDate IS NULL
+              AND r.ActualReturnDate IS NULL
+            ORDER BY r.Id DESC
+            LIMIT 1
             """;
 
         using var command = new MySqlCommand(sql, connection);
@@ -29,14 +30,13 @@ public class ReturnService
             throw new Exception("Filmen är inte uthyrd eller finns inte.");
 
         DateTime returnDate = reader.GetDateTime(0);
-        decimal rentalPrice = reader.GetDecimal(1);
+        decimal dailyPrice = reader.GetDecimal(1);
 
         int lateDays = Math.Max(
             0,
-            (DateTime.Today - returnDate.Date).Days
-        );
+            (DateTime.Today - returnDate.Date).Days);
 
-        return lateDays * rentalPrice;
+        return lateDays * dailyPrice;
     }
 
     public static ReturnReceipt ReturnMovie(
@@ -51,20 +51,23 @@ public class ReturnService
         {
             const string sql = """
                 SELECT
-                    ri.RentId,
-                    ri.ReturnDate,
+                    r.Id,
+                    r.ReturnDate,
                     c.Name,
                     m.Title,
-                    ri.PriceAtTransaction
-                FROM RentItem ri
-                JOIN Rent r ON ri.RentId = r.Id
-                JOIN Customer c ON r.CustomerId = c.Id
-                JOIN PhysicalCopy pc ON ri.PhysicalCopyId = pc.Id
+                    rp.Price
+                FROM Rent r
+                JOIN COrder co ON r.COrderId = co.Id
+                JOIN Customer c ON co.CustomerId = c.Id
+                JOIN PhysicalCopy pc ON r.PhysicalCopyId = pc.Id
                 JOIN Movie m ON pc.MovieId = m.Id
+                JOIN RentalPrice rp ON m.RentalPriceId = rp.Id
                 JOIN FilmStatus fs ON pc.FilmStatusId = fs.Id
                 WHERE pc.Id = @physicalCopyId
                   AND fs.Status = 'Rented'
-                  AND ri.ActualReturnDate IS NULL
+                  AND r.ActualReturnDate IS NULL
+                ORDER BY r.Id DESC
+                LIMIT 1
                 FOR UPDATE
                 """;
 
@@ -72,37 +75,38 @@ public class ReturnService
             DateTime returnDate;
             string customerName;
             string movieTitle;
-            decimal rentalPrice;
+            decimal dailyPrice;
             DateTime actualReturnDate = DateTime.Today;
 
-            using (var command = new MySqlCommand(sql, connection, transaction))
+            using (var command = new MySqlCommand(
+                sql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
+                command.Parameters.AddWithValue(
+                    "@physicalCopyId", physicalCopyId);
 
                 using var reader = command.ExecuteReader();
 
                 if (!reader.Read())
-                    throw new Exception("Filmen är inte uthyrd eller finns inte.");
+                    throw new Exception(
+                        "Filmen är inte uthyrd eller finns inte.");
 
                 rentId = reader.GetInt32(0);
                 returnDate = reader.GetDateTime(1);
                 customerName = reader.GetString(2);
                 movieTitle = reader.GetString(3);
-                rentalPrice = reader.GetDecimal(4);
+                dailyPrice = reader.GetDecimal(4);
             }
 
             int lateDays = Math.Max(
                 0,
-                (actualReturnDate.Date - returnDate.Date).Days
-            );
+                (actualReturnDate.Date - returnDate.Date).Days);
 
-            decimal lateFee = lateDays * rentalPrice;
+            decimal lateFee = lateDays * dailyPrice;
 
             if (lateFee > 0 && lateFeePaid == invoice)
             {
                 throw new Exception(
-                    "Välj antingen direktbetalning eller faktura."
-                );
+                    "Välj antingen direktbetalning eller faktura.");
             }
 
             if (lateFee == 0)
@@ -111,28 +115,29 @@ public class ReturnService
                 invoice = false;
             }
 
-            const string updateRentItemSql = """
-                UPDATE RentItem
+            const string updateRentSql = """
+                UPDATE Rent
                 SET ActualReturnDate = @actualReturnDate,
                     LateFee = @lateFee,
                     LateFeePaid = @lateFeePaid,
                     Invoice = @invoice
-                WHERE RentId = @rentId
-                  AND PhysicalCopyId = @physicalCopyId
+                WHERE Id = @rentId
                   AND ActualReturnDate IS NULL
                 """;
 
             using (var command = new MySqlCommand(
-                updateRentItemSql, connection, transaction))
+                updateRentSql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@actualReturnDate", actualReturnDate);
+                command.Parameters.AddWithValue(
+                    "@actualReturnDate", actualReturnDate);
                 command.Parameters.AddWithValue("@lateFee", lateFee);
                 command.Parameters.AddWithValue("@lateFeePaid", lateFeePaid);
                 command.Parameters.AddWithValue("@invoice", invoice);
                 command.Parameters.AddWithValue("@rentId", rentId);
-                command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
 
-                command.ExecuteNonQuery();
+                if (command.ExecuteNonQuery() != 1)
+                    throw new Exception(
+                        "Uthyrningen kunde inte uppdateras.");
             }
 
             const string statusSql = """
@@ -163,8 +168,10 @@ public class ReturnService
             using (var command = new MySqlCommand(
                 updateCopySql, connection, transaction))
             {
-                command.Parameters.AddWithValue("@statusId", availableStatusId);
-                command.Parameters.AddWithValue("@physicalCopyId", physicalCopyId);
+                command.Parameters.AddWithValue(
+                    "@statusId", availableStatusId);
+                command.Parameters.AddWithValue(
+                    "@physicalCopyId", physicalCopyId);
 
                 command.ExecuteNonQuery();
             }
