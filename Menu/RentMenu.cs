@@ -62,33 +62,68 @@ public class RentMenu
                 }
                 else
                 {
-                    Console.Write("Bekräfta uthyrningen? (j/n): ");
+                    decimal? specialPrice = null;
+                    bool validPrice = true;
 
-                    if (Console.ReadLine()?.Trim().ToLower() != "j")
+                    Console.Write(
+                        "Vill du ange ett specialpris? (j/n): ");
+
+                    if (Console.ReadLine()?.Trim().ToLower() == "j")
                     {
-                        Console.WriteLine("Uthyrningen avbröts.");
-                    }
-                    else
-                    {
-                        try
+                        Console.Write("Ange överenskommet totalpris (kr): ");
+
+                        string priceInput =
+                            Console.ReadLine()?.Trim() ?? "";
+
+                        priceInput = priceInput.Replace(',', '.');
+
+                        if (!decimal.TryParse(
+                            priceInput,
+                            NumberStyles.Number,
+                            CultureInfo.InvariantCulture,
+                            out decimal enteredPrice) ||
+                            enteredPrice < 0)
                         {
-                            int orderId = RentalService.RentMovie(
-                                connection,
-                                customerId,
-                                physicalCopyId,
-                                idChecked,
-                                returnDate,
-                                cOrderId);
-
-                            cOrderId = orderId;
-
-                            Console.WriteLine(
-                                $"Uthyrningen registrerades! Order-ID: {orderId}");
+                            Console.WriteLine("Ogiltigt specialpris.");
+                            validPrice = false;
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            Console.WriteLine(
-                                $"Kunde inte hyra ut filmen: {ex.Message}");
+                            specialPrice = enteredPrice;
+                        }
+                    }
+
+                    if (validPrice)
+                    {
+                        Console.Write("Bekräfta uthyrningen? (j/n): ");
+
+                        if (Console.ReadLine()?.Trim().ToLower() != "j")
+                        {
+                            Console.WriteLine("Uthyrningen avbröts.");
+                        }
+                        else
+                        {
+                            try
+                            {
+                                int orderId = RentalService.RentMovie(
+                                    connection,
+                                    customerId,
+                                    physicalCopyId,
+                                    idChecked,
+                                    returnDate,
+                                    cOrderId,
+                                    specialPrice);
+
+                                cOrderId = orderId;
+
+                                Console.WriteLine(
+                                    $"Uthyrningen registrerades! Order-ID: {orderId}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(
+                                    $"Kunde inte hyra ut filmen: {ex.Message}");
+                            }
                         }
                     }
                 }
