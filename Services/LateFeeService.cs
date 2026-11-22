@@ -1,29 +1,31 @@
+
 using MySqlConnector;
 
 public class LateFeeService
 {
-    public static List<LateRental> GetLateRentals(MySqlConnection connection)
+    public static List<LateRental> GetLateRentals(
+        MySqlConnection connection)
     {
-        // Använd om du vill hämta alla försenade filmer via vår stored procedure SelectAllLateMovie (finns i RentRepository)
-        // List<LateRental> lateRentals = RentRepository.GetLateReturn(connection);
-        List<LateRental> lateRentals = new(); 
+        List<LateRental> lateRentals = new();
 
         const string sql = """
             SELECT
                 c.Name,
                 c.Phonenumber,
                 m.Title,
-                pc.Id,
-                ri.ReturnDate,
-                ri.PriceAtTransaction
-            FROM RentItem ri
-            JOIN Rent r ON ri.RentId = r.Id
-            JOIN Customer c ON r.CustomerId = c.Id
-            JOIN PhysicalCopy pc ON ri.PhysicalCopyId = pc.Id
+                pc.Id AS PhysicalCopyId,
+                r.ReturnDate,
+                rp.Price AS DailyPrice,
+                r.PriceAtTransaction
+            FROM Rent r
+            JOIN COrder co ON r.COrderId = co.Id
+            JOIN Customer c ON co.CustomerId = c.Id
+            JOIN PhysicalCopy pc ON r.PhysicalCopyId = pc.Id
             JOIN Movie m ON pc.MovieId = m.Id
-            WHERE ri.ActualReturnDate IS NULL
-              AND ri.ReturnDate < @today
-            ORDER BY ri.ReturnDate
+            JOIN RentalPrice rp ON m.RentalPriceId = rp.Id
+            WHERE r.ActualReturnDate IS NULL
+              AND r.ReturnDate < @today
+            ORDER BY r.ReturnDate
             """;
 
         using var command = new MySqlCommand(sql, connection);
@@ -33,20 +35,27 @@ public class LateFeeService
 
         while (reader.Read())
         {
-            DateTime returnDate = reader.GetDateTime(4);
-            decimal rentalPrice = reader.GetDecimal(5);
+            DateTime returnDate = reader.GetDateTime("ReturnDate");
+            decimal dailyPrice = reader.GetDecimal("DailyPrice");
 
-            int lateDays = (DateTime.Today - returnDate.Date).Days;
+            int lateDays = Math.Max(
+                0,
+                (DateTime.Today - returnDate.Date).Days);
 
             lateRentals.Add(new LateRental
             {
-                CustomerName = reader.GetString(0),
-                CustomerPhone = reader.IsDBNull(1) ? "" : reader.GetString(1),
-                MovieTitle = reader.GetString(2),
-                PhysicalCopyId = reader.GetInt32(3),
+                CustomerName = reader.GetString("Name"),
+                CustomerPhone = reader.IsDBNull(
+                    reader.GetOrdinal("Phonenumber"))
+                    ? ""
+                    : reader.GetString("Phonenumber"),
+                MovieTitle = reader.GetString("Title"),
+                PhysicalCopyId = reader.GetInt32("PhysicalCopyId"),
                 ReturnDate = returnDate,
                 LateDays = lateDays,
-                LateFee = lateDays * rentalPrice
+                LateFee = lateDays * dailyPrice,
+                PriceAtTransaction =
+                    reader.GetDecimal("PriceAtTransaction")
             });
         }
 
