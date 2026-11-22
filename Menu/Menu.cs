@@ -13,8 +13,9 @@ public class Menu
             Console.WriteLine("1. Filmer");
             Console.WriteLine("2. Kunder");
             Console.WriteLine("3. Hyr Film");
-            Console.WriteLine("4. Återlämning");
-            Console.WriteLine("5. Försening");
+            Console.WriteLine("4. Köp");
+            Console.WriteLine("5. Återlämning");
+            Console.WriteLine("6. Försening");
 
             Console.WriteLine("Välj alternativ: ");
             int Choice = Convert.ToInt32(Console.ReadLine());
@@ -33,9 +34,13 @@ public class Menu
             }
             else if (Choice == 4)
             {
-                ReturnMenu.ShowReturnMenu(connection);
+                BuyProdcutMenu.BuyMenu(connection);
             }
             else if (Choice == 5)
+            {
+                ReturnMenu.ShowReturnMenu(connection);
+            }
+            else if (Choice == 6)
             {
                 LateFeeMenu.ShowLateFeeMenu(connection);
             }
