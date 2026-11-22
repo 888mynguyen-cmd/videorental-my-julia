@@ -20,14 +20,16 @@ public class ProductMenu
 
     public static void BuyProduct(MySqlConnection connection)
     {
-            
-        Console.WriteLine("Vilken Product vill du köpa?");
-        int ProductChoice = Convert.ToInt32(Console.ReadLine());
-
-        if(ProductChoice == 2)
+        while (true)
         {
-            
+            Console.WriteLine("Vilken produkt vill du köpa?");
+            int productId = Convert.ToInt32(Console.ReadLine());
+
+            Console.WriteLine("Hur många vill du köpa?");
+            int quantity = Convert.ToInt32(Console.ReadLine());
+
         }
+        
 
     }
         
