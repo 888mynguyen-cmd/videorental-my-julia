@@ -33,6 +33,8 @@ public class ReceiptService
 {
     private readonly List<ReceiptItem> items = new();
 
+    public IReadOnlyList<ReceiptItem> Items => items.AsReadOnly();
+
     public void AddRental(string movieTitle, decimal price)
     {
         items.Add(new ReceiptItem(
@@ -122,23 +124,5 @@ public class ReceiptService
     public decimal GetTotal()
     {
         return items.Sum(item => item.TotalPrice);
-    }
-
-    public void PrintReceipt()
-    {
-        Console.WriteLine();
-        Console.WriteLine("========== VIDEOTEKET ==========");
-        Console.WriteLine("             KVITTO");
-        Console.WriteLine("--------------------------------");
-
-        foreach (ReceiptItem item in items)
-        {
-            Console.WriteLine(
-                $"{item.Name} | {item.Quantity} st x {item.UnitPrice:0.00} kr = {item.TotalPrice:0.00} kr");
-        }
-
-        Console.WriteLine("--------------------------------");
-        Console.WriteLine($"TOTALT: {GetTotal():0.00} kr");
-        Console.WriteLine("================================");
     }
 }
