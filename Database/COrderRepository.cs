@@ -14,4 +14,20 @@ public class COrderRepository
         return (int)command.LastInsertedId; // Hämtar och returnerar id på den nyaste skapade beställningen 
     }
     
+        public static void PayOrder(MySqlConnection connection, int cOrderId)
+    {
+        using MySqlCommand command = new MySqlCommand("""
+        UPDATE COrder
+        SET Paid = true
+        WHERE Id = @cOrderId AND Paid = false;
+        """, connection);
+
+        command.Parameters.AddWithValue("@cOrderId", cOrderId);
+
+        int cOrderRows = command.ExecuteNonQuery();
+        if (cOrderRows == 0)
+        {
+            throw new Exception("Beställningen finns inte eller är redan betald.");
+        }
+    }
 }
