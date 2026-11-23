@@ -89,9 +89,17 @@ public class MovieMenu
                 Console.WriteLine("Vilken film vill du ta bort?");
                 int removeMovieId = Convert.ToInt32(Console.ReadLine() ?? "");
 
-                MovieRepository.RemoveMovie(connection, removeMovieId);
-                Console.WriteLine("Filmen har tagits bort!");
+                try
+                {
+                    MovieRepository.RemoveMovie(connection, removeMovieId);
+                    Console.WriteLine("Filmen har tagits bort!");                 
+                }
+                catch (MySqlException)
+                {
+                    Console.WriteLine("Kan inte ta bort filmen eftersom den har exemplar.");
+                }
             }
+
             else if (FilmChoice == 5)
                 {
                     while(true)
