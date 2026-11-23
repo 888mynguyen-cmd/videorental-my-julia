@@ -126,4 +126,14 @@ public class BuyService
             throw;
         }
     }
+
+    public static void BuyProducts(MySqlConnection connection, int productId, int quantity)
+    {
+        if(quantity <= 0)
+        {
+            throw new Exception("Antalet måste vara större än 0 ");
+        }
+            int cOrderId = COrderRepository.NewOrder(connection); // Skapa en beställning och ge Id
+            AddProductToOrder(connection, cOrderId, productId, quantity); // Lägger till produkterna i beställning
+    }
 }
