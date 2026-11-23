@@ -16,7 +16,7 @@ public class RentMenu
             return;
         }
 
-        if (!RentalService.CustomerExists(connection, customerId))
+        if (!RentRepository.CustomerExists(connection, customerId))
         {
             Console.WriteLine("Kunden finns inte.");
             return;

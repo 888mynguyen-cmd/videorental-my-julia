@@ -66,7 +66,7 @@ public class ReturnMenu
                     Console.Write("Vill kunden ha ett återlämningskvitto? (j/n): ");
                     string? receiptAnswer = Console.ReadLine();
 
-                    if (receiptAnswer?.Trim().ToLower() == "j")
+                    if (receiptAnswer?.Trim().ToLowerInvariant() == "j")
                     {
                         Console.WriteLine();
                         Console.WriteLine("========== ÅTERLÄMNINGSKVITTO ==========");
