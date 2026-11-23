@@ -144,7 +144,6 @@ public class RentMenu
                 Console.ReadLine()?.Trim().ToLower() == "j";
         }
 
-        // Köp produkter på samma order
         if (cOrderId.HasValue)
         {
             Console.Write("Vill kunden köpa produkter? (j/n): ");
@@ -199,29 +198,49 @@ public class RentMenu
                     Console.ReadLine()?.Trim().ToLower() == "j";
             }
 
-            Console.Write("Vill kunden ha ett kvitto? (j/n): ");
-
-            if (Console.ReadLine()?.Trim().ToLower() == "j")
+            // Betalning
+            try
             {
-                try
-                {
-                    ReceiptService receipt = new ReceiptService();
+                ReceiptService receipt = new ReceiptService();
 
-                    receipt.LoadOrderFromDatabase(
+                receipt.LoadOrderFromDatabase(
+                    connection, cOrderId.Value);
+
+                Console.WriteLine();
+                Console.WriteLine(
+                    $"Totalt att betala: {receipt.GetTotal():0.00} kr");
+
+                Console.Write("Vill kunden betala? (j/n): ");
+
+                if (Console.ReadLine()?.Trim().ToLower() == "j")
+                {
+                    COrderRepository.PayOrder(
                         connection, cOrderId.Value);
 
-                    PrintReceipt(receipt);
+                    Console.WriteLine("Betalning genomförd!");
+
+                    Console.Write("Vill kunden ha ett kvitto? (j/n): ");
+
+                    if (Console.ReadLine()?.Trim().ToLower() == "j")
+                    {
+                        PrintReceipt(receipt);
+                    }
                 }
-                catch (Exception ex)
+                else
                 {
                     Console.WriteLine(
-                        $"Kunde inte skriva ut kvittot: {ex.Message}");
+                        "Betalningen avbröts. Beställningen är fortfarande obetald.");
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"Kunde inte genomföra betalningen: {ex.Message}");
             }
         }
     }
 
-    public static void PrintReceipt(ReceiptService receipt) // Behövde ändra till public så jag kunde återanvända
+    public static void PrintReceipt(ReceiptService receipt)
     {
         Console.WriteLine();
         Console.WriteLine("========== VIDEOTEKET ==========");
