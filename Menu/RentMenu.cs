@@ -221,7 +221,7 @@ public class RentMenu
         }
     }
 
-    private static void PrintReceipt(ReceiptService receipt)
+    public static void PrintReceipt(ReceiptService receipt) // Behövde ändra till public så jag kunde återanvända
     {
         Console.WriteLine();
         Console.WriteLine("========== VIDEOTEKET ==========");
