@@ -7,6 +7,7 @@ public class LateRental
     public DateTime ReturnDate { get; set; }
     public int LateDays { get; set; }
     public decimal LateFee { get; set; }
+    public decimal DailyPrice { get; set; }
 
     public decimal PriceAtTransaction { get; set; }
 
